@@ -139,7 +139,8 @@ width: 70px;
             bottom: 0;
             left: 0;
             width: 100%;
-            background-color: #333;
+            background-color: rgba(255, 255, 255, 0.8);
+            
             display: flex;
             justify-content: space-evenly;
             align-items: center;
@@ -176,17 +177,19 @@ width: 70px;
 #new-welcome-message {
   display: none;
   position: fixed;
-  top: 20%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  Color: black;
   background-color: rgba(255, 255, 255, 0.9);
   border: 2px solid #ddd;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 80%;
+  width: 100%;
   max-width: 400px;
   padding: 20px;
   text-align: center;
+  Font-weight: bold;
   z-index: 1000;
 }
 
@@ -196,7 +199,7 @@ width: 70px;
 }
 
 #new-welcome-message img {
-  width: 100px;
+  width: 80%;
   height: auto;
   margin: 10px 0;
 }
@@ -235,7 +238,7 @@ width: 70px;
   <!-- Header Section -->
   <header>
     <div class="logo">
-      <img src="Fruit.png" alt="Logo">
+      <img src="fruit.png" alt="Logo">
     </div>
     <div class="profile">
       <img id="avatar" src="avatar.png" alt="Profile Avatar">
@@ -258,11 +261,11 @@ width: 70px;
     <!-- Menu Section -->
     <div class="menu">
       <div class="menu-item" id="withdrawal">
-        <img src="Wi.png" alt="Withdrawal">
+        <img src="wi.png" alt="Withdrawal">
         <p>Withdrawal</p>
       </div>
       <div class="menu-item" id="investment">
-        <img src="In.png" alt="Investment">
+        <img src="in.png" alt="Investment">
         <p>Investment</p>
       </div>
       <div class="menu-item" id="invite">
@@ -284,10 +287,10 @@ width: 70px;
     <div>
         <img src="boss.png" style="width: 100%;height: 50%;">
     </div>
-    <div class="menu-item" id="daily-income">
-        <img src="ico.png" alt="">
-        <p>Daily Incomes</p>
-    </div>
+    <div class="menu-item" id="daily-income2">
+        <img src="ico.png" alt="Daily Income">
+        <p>Clear Your Daily Income</p>
+      </div>
     
      <div>
         <img src="boss.png" style="width: 100%;height: 50%;">
@@ -306,9 +309,10 @@ width: 70px;
     </footer>
     
       <div id="new-welcome-message" class="hidden">
-  <p>You are welcome, <span id="userName"></span> clear your bonus</p>
-  <img src="Bonus.png" alt="Bonus">
-  <button id="start-investment">Start Investment Now</button>
+  <p>You are welcome, <span id="userName"></span> clear your Welcome Bonus ₦500 </p>
+  <img src="Bonus2.png" alt="Bonus">
+  <p>Invest Now and Get ₦500</p>
+  <button id="start-investment"> Invest Now</button>
   <span id="close-message">✖️</span>
 </div>
 
@@ -346,8 +350,6 @@ width: 70px;
 
 </script>
 <script type="module">
-    
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -370,18 +372,14 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 
 // DOM Elements
-const avatar = document.getElementById("avatar");
-const uploadAvatar = document.getElementById("upload-avatar");
 const fullNameDisplay = document.getElementById("fullNameDisplay");
 const userProductDisplay = document.getElementById("userProductDisplay");
 const userDailyIncomeDisplay = document.getElementById("userDailyIcomeDisplay");
 const userBalanceDisplay = document.getElementById("userBalanceDispay");
 const userName = document.getElementById("userName");
+const newWelcomeMessage = document.getElementById("new-welcome-message");
 const startInvestment = document.getElementById("start-investment");
 const closeMessage = document.getElementById("close-message");
-
-// DOM Element for New Welcome Message
-const newWelcomeMessage = document.getElementById("new-welcome-message");
 
 // Authentication: Load User Data After Sign-In
 onAuthStateChanged(auth, (user) => {
@@ -389,11 +387,19 @@ onAuthStateChanged(auth, (user) => {
     const userId = user.uid;
     const userRef = ref(db, `users/${userId}`);
 
-    // Load User Data
+    // Load User Data and Listen for Changes
     onValue(userRef, (snapshot) => {
       if (snapshot.exists()) {
         const userData = snapshot.val();
+        localStorage.setItem("userData", JSON.stringify(userData)); // Store in localStorage
         displayUserData(userData);
+
+        // Check dailyUpgrade and show message if it's 0
+        if (userData.dailyUpgrade === 0) {
+          setTimeout(() => {
+            showWelcomeMessage(userData.fullName || "User");
+          }, 300); 
+        }
       } else {
         console.error(`User data not found for userId: ${userId}`);
       }
@@ -414,7 +420,22 @@ function displayUserData(userData) {
   userName.textContent = userData.fullName || "User";
 }
 
-  
+// Show Welcome Message
+function showWelcomeMessage(name) {
+  document.getElementById("userName").textContent = name;
+  newWelcomeMessage.classList.remove("hidden");
+  newWelcomeMessage.style.display = "block";
+
+  // Close message functionality
+  closeMessage.addEventListener("click", () => {
+    newWelcomeMessage.style.display = "none";
+  });
+
+  // Button click navigation
+  startInvestment.addEventListener("click", () => {
+    window.location.href = "invest.html";
+  });
+}
 
 // Menu Navigation
 document.getElementById("withdrawal").addEventListener("click", () => {
@@ -429,6 +450,14 @@ document.getElementById("invite").addEventListener("click", () => {
   window.location.href = "invite.html";
 });
 
+document.getElementById("daily-income2").addEventListener("click", () => {
+  if (userDailyIncomeDisplay.textContent === "0") {
+    alert("Buy your product before accessing daily income.");
+  } else {
+    window.location.href = "upgrade.html";
+  }
+  });
+
 document.getElementById("daily-income").addEventListener("click", () => {
   if (userDailyIncomeDisplay.textContent === "0") {
     alert("Buy your product before accessing daily income.");
@@ -440,7 +469,7 @@ document.getElementById("daily-income").addEventListener("click", () => {
 document.getElementById("profile").addEventListener("click", () => {
   window.location.href = "profile.html";
 });
-
 </script>
+
 </body>
 </html>
