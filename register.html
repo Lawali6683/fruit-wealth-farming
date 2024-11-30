@@ -272,7 +272,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-const defaultReferralCode = "istpmc";
+const defaultReferralCode = "lu0oig";
 
 // Function to handle referral code (from URL or default)
 async function handleReferralCode() {
@@ -330,7 +330,7 @@ document.getElementById("registrationForm").addEventListener("submit", async (e)
 
     } catch (error) {
         console.error("Error during referral update:", error);
-        alert("There was an issue with referral update. Try again.");
+        alert("There was an issue with referral code. Try again.");
     } finally {
         document.getElementById("loadingScreen").style.display = "none";
     }
@@ -394,11 +394,11 @@ async function registerUser() {
             username,
             phoneNumber,
             email,
-            dailyUpgrade: 0,
-            investment: 0,
-            userBalance: 0,
+            dailyUpgrade: 0.00,
+            investment: 0.00,
+            userBalance: 0.00,
             accountNumber: 0,
-            withdrawalPending: 0,
+            withdrawalPending: [],
             withdrawalHistory: [],
         });
 
