@@ -272,7 +272,7 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 // Default referral code
-const defaultReferralCode = "lu0oig";
+const defaultReferralCode = "80ar2g";
 
 // Function to handle referral code
 async function handleReferralCode() {
@@ -381,7 +381,9 @@ async function registerUser(referralCode) {
 
     } catch (error) {
         console.error("Error during registration:", error);
-                document.getElementById("loadingScreen").style.display = "none";
+      alert("email address or phone number oredy Ben user. error occurred: " + error.message);
+    } finally {       
+       document.getElementById("loadingScreen").style.display = "none";
     }
 }
 
