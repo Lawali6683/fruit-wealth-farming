@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <style>
+     /* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to bottom right, #e9f5e9, #f9f5d7);
+  color: #2d3436;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.profile-container {
+  width: 100%;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  transition: transform 0.4s ease-in-out;
+  border: 2px solid #d4a373;
+}
+
+.profile-container:hover {
+  transform: translateY(-12px);
+}
+
+.profile-header {
+  background: linear-gradient(135deg, #88d498, #f4a261);
+  padding: 40px 20px;
+  text-align: center;
+  color: #fff;
+}
+
+.profile-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  object-fit: cover;
+  margin-bottom: 15px;
+  background-color: #fff;
+}
+
+h1 {
+  font-size: 21px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #2c3e50;
+}
+
+p {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.profile-details {
+  padding: 35px 25px;
+  background-color: #f9f7f1;
+}
+
+.profile-details p {
+  margin: 12px 0;
+  font-size: 10px;
+  color: #2d3436;
+}
+
+.profile-details strong {
+  color: #8fbc8f;
+  font-weight: 600;
+}
+
+ul {
+  list-style: none;
+  margin: 15px 0;
+  padding: 0;
+}
+
+ul li {
+  font-size: 12px;
+  padding: 8px 0;
+  color: #556b2f;
+}
+
+button {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background: #88d498;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 25px;
+  cursor: pointer;
+  transition: background 0.4s ease-in-out;
+}
+
+button:hover {
+  background: #68b36b;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-container {
+    margin: 20px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  p {
+    font-size: 15px;
+  }
+
+  button {
+    font-size: 16px;
+  }
+}
+
+
+  </style>  
+</head>
+<body>
+
+  <div class="profile-container">
+    <div class="profile-header">
+      <img id="avatarImage" class="profile-avatar" src="default-avatar.png" alt="Profile Image">
+      <h1 id="fullName">User's Full Name</h1>
+      <p id="username">@username</p>
+    </div>
+    
+    <div class="profile-details">
+      <p><strong>Email:</strong> <span id="email">example@example.com</span></p>
+      <p><strong>Gender:</strong> <span id="gender">Male/Female</span></p>
+      <p><strong>Country:</strong> <span id="country">Country</span></p>
+      <p><strong>Address:</strong> <span id="address">Address</span></p>
+      <p><strong>Phone Number:</strong> <span id="phoneNumber">+123456789</span></p>
+      <p><strong>Your Referrals:</strong> <span id="referralCount">0</span></p>
+      <p><strong>Referred By:</strong> <span id="referralBy">User</span></p>
+      <p><strong>Account Details:</strong></p>
+      <ul>
+        <li><strong>Account Number:</strong> <span id="accountNumber">1234567890</span></li>
+        <li><strong>Bank Name:</strong> <span id="bankName">Bank</span></li>
+        <li><strong>Account Name:</strong> <span id="accountName">Account Name</span></li>
+      </ul>
+      <p><strong>Registration Date:</strong> <span id="registrationDate">01/01/2020</span></p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+      authDomain: "fruit-wealth-farming.firebaseapp.com",
+      databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
+      projectId: "fruit-wealth-farming",
+      storageBucket: "fruit-wealth-farming.appspot.com",
+      messagingSenderId: "417203511096",
+      appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+      measurementId: "G-BZFLHB4KM2"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    const userId = auth.currentUser?.uid;
+
+    function loadProfile() {
+      const userRef = ref(db, `users/${userId}`);
+      onValue(userRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          localStorage.setItem("userData", JSON.stringify(data));
+          displayUserData(data);
+        }
+      });
+    }
+
+    function displayUserData(data) {
+      document.getElementById("avatarImage").src = localStorage.getItem("avatarImage") || "default-avatar.png";
+      document.getElementById("fullName").innerText = data.fullName || "Full Name";
+      document.getElementById("username").innerText = data.username || "@username";
+      document.getElementById("email").innerText = data.email || "Email";
+      document.getElementById("gender").innerText = data.gender || "Gender";
+      document.getElementById("country").innerText = data.country || "Country";
+      document.getElementById("address").innerText = data.address || "Address";
+      document.getElementById("phoneNumber").innerText = data.phoneNumber || "Phone Number";
+      document.getElementById("referralCount").innerText = data.referralCount || "0";
+      document.getElementById("referralBy").innerText = data.referralBy || "Referral By";
+      document.getElementById("accountNumber").innerText = data.accountNumber || "Account Number";
+      document.getElementById("bankName").innerText = data.bankName || "Bank Name";
+      document.getElementById("accountName").innerText = data.accountName || "Account Name";
+      document.getElementById("registrationDate").innerText = data.registrationDate || "Date";
+    }
+
+    window.onload = function() {
+      const savedData = localStorage.getItem("userData");
+      if (savedData) {
+        displayUserData(JSON.parse(savedData));
+      }
+      loadProfile();
+    };
+  </script>
+
+</body>
+</html>
