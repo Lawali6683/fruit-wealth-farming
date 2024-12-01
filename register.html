@@ -381,9 +381,7 @@ async function registerUser(referralCode) {
 
     } catch (error) {
         console.error("Error during registration:", error);
-        alert("email address or phone number oredy Ben user. error occurred: " + error.message);
-    } finally {
-        document.getElementById("loadingScreen").style.display = "none";
+                document.getElementById("loadingScreen").style.display = "none";
     }
 }
 
