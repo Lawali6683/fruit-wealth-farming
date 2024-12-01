@@ -249,11 +249,10 @@ function togglePassword(fieldId) {
     }
 }
 </script>
-
-    <script type="module">
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -272,75 +271,47 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
+// Default referral code
 const defaultReferralCode = "lu0oig";
 
-// Function to handle referral code (from URL or default)
+// Function to handle referral code
 async function handleReferralCode() {
+    document.getElementById("loadingScreen").style.display = "flex";
+
     const urlParams = new URLSearchParams(window.location.search);
     let referralCode = urlParams.get('ref') || defaultReferralCode;
-
     document.getElementById("referralCode").value = referralCode;
 
-    const dbRef = ref(db);  // Initialize ref here properly
     try {
-        const snapshot = await get(child(dbRef, 'users'));
+        const snapshot = await get(ref(db, 'users'));
         if (snapshot.exists()) {
-            const users = Object.entries(snapshot.val());
-            const referrer = users.find(([key, user]) => user.referralCode === referralCode);
-            if (!referrer && referralCode !== defaultReferralCode) {
-                alert("This referral code is not valid. Using the default code.");
-                referralCode = defaultReferralCode;
-                document.getElementById("referralCode").value = referralCode;
-            } else if (referrer) {
-                // Update referral count for the referrer if the code exists
-                const [referrerKey, referrerData] = referrer;
-                await update(ref(db, `users/${referrerKey}`), {
-                    referralCount: (referrerData.referralCount || 0) + 1,
+            const users = snapshot.val();
+            const referrer = Object.keys(users).find(uid => users[uid].referralCode === referralCode);
+
+            if (referrer) {
+                // Update referrer's referral count
+                const referrerData = users[referrer];
+                await update(ref(db, `users/${referrer}`), {
+                    referralCount: (referrerData.referralCount || 0) + 1
                 });
+            } else if (referralCode !== defaultReferralCode) {
+                alert("Referral code is not valid. Using the default code.");
+                document.getElementById("referralCode").value = defaultReferralCode;
             }
         }
     } catch (error) {
-        console.error("Error checking referral code:", error.message);
-    }
-}
-
-// Registration form submit handler
-document.getElementById("registrationForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    document.getElementById("loadingScreen").style.display = "flex";
-
-    const referralCode = document.getElementById("referralCode").value;
-
-    try {
-        const refSnapshot = await get(ref(db, 'users'));
-        const referrer = refSnapshot.exists() && Object.entries(refSnapshot.val()).find(([_, user]) => user.referralCode === referralCode);
-
-        if (!referrer) {
-            alert("Referral code not valid or referral count update failed. Try again.");
-            document.getElementById("loadingScreen").style.display = "none";
-            return;
-        }
-
-        const [referrerKey, referrerData] = referrer;
-        await update(ref(db, `users/${referrerKey}`), {
-            referralCount: (referrerData.referralCount || 0) + 1,
-        });
-
-        await registerUser();
-
-    } catch (error) {
-        console.error("Error during referral update:", error);
-        alert("There was an issue with referral code. Try again.");
+        console.error("Error checking referral code:", error);
     } finally {
         document.getElementById("loadingScreen").style.display = "none";
     }
-});
+}
 
-// Function to register the user
-async function registerUser() {
+// Function to register user and update full data
+async function registerUser(referralCode) {
+    document.getElementById("loadingScreen").style.display = "flex";
+
     const fullName = document.getElementById("fullName").value;
     const gender = document.getElementById("gender").value;
-    const referralCode = document.getElementById("referralCode").value;
     const county = document.getElementById("county").value;
     const address = document.getElementById("address").value;
     const username = document.getElementById("username").value;
@@ -356,20 +327,21 @@ async function registerUser() {
     }
 
     try {
-        const snapshot = await get(ref(db, `users`));
+        // Check if email or phone number already exists
+        const snapshot = await get(ref(db, 'users'));
         if (snapshot.exists()) {
-            const users = Object.values(snapshot.val());
-            const emailExists = users.some(user => user.email === email);
-            const phoneExists = users.some(user => user.phoneNumber === phoneNumber);
+            const users = snapshot.val();
+            const emailExists = Object.values(users).some(user => user.email === email);
+            const phoneExists = Object.values(users).some(user => user.phoneNumber === phoneNumber);
 
             if (emailExists) {
-                alert("This email is already in use. Login.");
+                alert("Email address already used. Please login.");
                 document.getElementById("loadingScreen").style.display = "none";
                 return;
             }
 
             if (phoneExists) {
-                alert("This phone number is already in use. Please use.");
+                alert("Phone number already used. Please login.");
                 document.getElementById("loadingScreen").style.display = "none";
                 return;
             }
@@ -378,56 +350,52 @@ async function registerUser() {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const userId = userCredential.user.uid;
 
-        const referralBy = referralCode !== defaultReferralCode ? referralCode : null;
         const generatedReferralCode = Math.random().toString(36).substring(2, 8);
         const referralLink = `https://fruit-wealth-farming.vercel.app/referral?user=${username}&ref=${generatedReferralCode}`;
 
+        // Save full user data
         await set(ref(db, `users/${userId}`), {
             fullName,
             gender,
-            referralCode: generatedReferralCode,
-            referralBy,
-            referralCount: 0,
-            referralLink,
             county,
             address,
             username,
             phoneNumber,
             email,
+            referralCode: generatedReferralCode,
+            referralBy: referralCode !== defaultReferralCode ? referralCode : null,
+            referralCount: 0,
+            referralLink,
             dailyUpgrade: 0.00,
             investment: 0.00,
             userBalance: 0.00,
-            accountNumber: 0,
+            accountNumber: [],
             withdrawalPending: [],
             withdrawalHistory: [],
+            registrationDate: new Date().toISOString(),
+            activeStatus: true
         });
 
-        if (referralBy) {
-            const referrerSnapshot = await get(ref(db, `users`));
-            if (referrerSnapshot.exists()) {
-                const referrerUsers = Object.entries(referrerSnapshot.val());
-                for (const [key, user] of referrerUsers) {
-                    if (user.referralCode === referralBy) {
-                        const newReferralCount = (user.referralCount || 0) + 1;
-                        await update(ref(db, `users/${key}`), { referralCount: newReferralCount });
-                        break;
-                    }
-                }
-            }
-        }
-
-        alert("Congratulations! Registration successful.");
+        alert("Registration successful!");
         window.location.href = "login.html";
+
     } catch (error) {
-        console.error("Error during registration:", error.message);
+        console.error("Error during registration:", error);
         alert("An error occurred: " + error.message);
     } finally {
         document.getElementById("loadingScreen").style.display = "none";
     }
 }
 
-// Call handleReferralCode on page load
+// Event listener for form submission
+document.getElementById("registrationForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const referralCode = document.getElementById("referralCode").value;
+    await registerUser(referralCode);
+});
+
+// Handle referral code on page load
 handleReferralCode();
 </script>
-</body>
+    </body>
 </html>
