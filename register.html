@@ -289,7 +289,6 @@ async function handleReferralCode() {
             const referrer = Object.keys(users).find(uid => users[uid].referralCode === referralCode);
 
             if (referrer) {
-                // Update referrer's referral count
                 const referrerData = users[referrer];
                 await update(ref(db, `users/${referrer}`), {
                     referralCount: (referrerData.referralCount || 0) + 1
@@ -306,7 +305,7 @@ async function handleReferralCode() {
     }
 }
 
-// Function to register user and update full data
+// Function to register user
 async function registerUser(referralCode) {
     document.getElementById("loadingScreen").style.display = "flex";
 
@@ -327,26 +326,7 @@ async function registerUser(referralCode) {
     }
 
     try {
-        // Check if email or phone number already exists
-        const snapshot = await get(ref(db, 'users'));
-        if (snapshot.exists()) {
-            const users = snapshot.val();
-            const emailExists = Object.values(users).some(user => user.email === email);
-            const phoneExists = Object.values(users).some(user => user.phoneNumber === phoneNumber);
-
-            if (emailExists) {
-                alert("Email address already used. Please login.");
-                document.getElementById("loadingScreen").style.display = "none";
-                return;
-            }
-
-            if (phoneExists) {
-                alert("Phone number already used. Please login.");
-                document.getElementById("loadingScreen").style.display = "none";
-                return;
-            }
-        }
-
+        // Create user with email and password
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const userId = userCredential.user.uid;
 
@@ -381,9 +361,9 @@ async function registerUser(referralCode) {
 
     } catch (error) {
         console.error("Error during registration:", error);
-      alert("email address or phone number oredy Ben user. error occurred: " + error.message);
-    } finally {       
-       document.getElementById("loadingScreen").style.display = "none";
+        alert("Error occurred Haruna Lawali sever: " + error.message);
+    } finally {
+        document.getElementById("loadingScreen").style.display = "none";
     }
 }
 
@@ -397,5 +377,6 @@ document.getElementById("registrationForm").addEventListener("submit", async (e)
 // Handle referral code on page load
 handleReferralCode();
 </script>
+
     </body>
 </html>
