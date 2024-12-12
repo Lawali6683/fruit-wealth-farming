@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Wealth Farming - Invest in Fruits</title>
+    <style>
+    /* Global Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ececec, #d6d6d6);
+    margin: 0;
+    padding: 0;
+    color: #2c3e50;
+    line-height: 1.6;
+    Color: white;
+}
+
+/* Header Styles */
+header {
+    text-align: center;
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+    color: white;
+    padding: 40px 20px;
+    border-bottom: 5px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    font-size: 20px;
+    margin: 0;
+    font-weight: 70;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+header p {
+    font-size: 10px;
+    margin: 10px 0;
+    opacity: 0.9;
+}
+
+/* Container Styles */
+.products-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    padding: 24px;
+    background: linear-gradient(145deg, #aaf4ff95, #d5ffdf95);
+}
+
+/* Product Card Styles */
+.product-card {
+background: linear-gradient(90deg, #6a11cb, #2575fc);
+    Color: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 280px;
+    text-align: center;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    position: relative;
+    padding: 15px;
+}
+
+.product-card:hover {
+    transform: scale(1.08);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Image Styles */
+.product-card img {
+    width: 100%;
+    border-radius: 15px;
+    transition: transform 0.5s ease-in-out;
+}
+
+.product-card img:hover {
+    transform: scale(1.15);
+    filter: brightness(90%);
+}
+
+/* Content Styles */
+.product-card h2 {
+    font-size: 25px;
+    color: #5bff15;
+    margin: 15px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.product-card p {
+    font-size: 15px;
+    
+    margin: 10px 0;
+}
+
+/* Button Styles */
+button {
+    background: linear-gradient(90deg, #16a085, #27ae60);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s ease;
+}
+
+button:hover {
+    background: linear-gradient(90deg, #27ae60, #16a085);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Footer Styles */
+footer {
+    text-align: center;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 20px;
+    font-size: 1rem;
+    border-top: 3px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .products-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .product-card {
+        width: 90%;
+    }
+
+    header h1 {
+        font-size: 25px;
+    }
+
+    header p {
+        font-size: 13px;
+    }
+
+p {
+    margin: 10px 0;
+    line-height: 1.1; 
+}
+
+
+</style>
+</head>
+
+<body>
+    <header>
+        <h1>Congratulations to Fruit Wealth Farming</h1>
+        <p>Investment for fruits in partnership with American and African companies.</p>
+        <p>Invest now and earn up to ₦500 daily income!</p>
+        <p>Deposit Now and clear your Welcome bunos ₦500 </p> 
+        <p>You can withdraw your Welcome bonus Now</p>
+    </header>
+
+    <main class="products-container">
+        <!-- Banana -->
+        <div class="product-card" data-product="Banana" data-price="3500" data-daily-income="160" data-duration="35" data-total-income="5600">
+            <img src="ba.png" alt="Banana">
+            <h2>Banana</h2>
+            <p>Price: ₦3,500</p>
+            <p>Daily Income: ₦160</p>
+            <p>Duration: 35 days</p>
+            <p>Total Income: ₦5,600</p>
+            <button class="invest-btn">Invest</button>
+        </div>
+
+        <!-- Orange -->
+        <div class="product-card" data-product="Orange" data-price="8000" data-daily-income="350" data-duration="35" data-total-income="13650">
+            <img src="or.png" alt="Orange">
+            <h2>Orange</h2>
+            <p>Price: ₦8,000</p>
+            <p>Daily Income: ₦350</p>
+            <p>Duration: 35 days</p>
+            <p>Total Income: ₦13,650</p>
+            <button class="invest-btn">Invest</button>
+        </div>
+
+        <!-- Apple -->
+        <div class="product-card" data-product="Apple" data-price="15000" data-daily-income="780" data-duration="36" data-total-income="28080">
+            <img src="ap.png" alt="Apple">
+            <h2>Apple</h2>
+            <p>Price: ₦15,000</p>
+            <p>Daily Income: ₦780</p>
+            <p>Duration: 36 days</p>
+            <p>Total Income: ₦28,080</p>
+            <button class="invest-btn">Invest</button>
+        </div>
+
+        <!-- Avocados -->
+        <div class="product-card" data-product="Avocados" data-price="35000" data-daily-income="1560" data-duration="37" data-total-income="57720">
+            <img src="av.png" alt="Avocados">
+            <h2>Avocados</h2>
+            <p>Price: ₦35,000</p>
+            <p>Daily Income: ₦1,560</p>
+            <p>Duration: 37 days</p>
+            <p>Total Income: ₦57,720</p>
+            <button class="invest-btn">Invest</button>
+        </div>
+
+        <!-- Berry -->
+        <div class="product-card" data-product="Berry" data-price="70000" data-daily-income="3120" data-duration="39" data-total-income="121680">
+            <img src="be.png" alt="Berry">
+            <h2>Berry</h2>
+            <p>Price: ₦70,000</p>
+            <p>Daily Income: ₦3,120</p>
+            <p>Duration: 39 days</p>
+            <p>Total Income: ₦121,680</p>
+            <button class="invest-btn">Invest</button>
+        </div>
+
+        <!-- Mango -->
+        <div class="product-card" data-product="Mango" data-price="140000" data-daily-income="6240" data-duration="40" data-total-income="249600">
+            <img src="man.png" alt="Mango">
+            <h2>Mango</h2>
+            <p>Price: ₦140,000</p>
+            <p>Daily Income: ₦6,240</p>
+            <p>Duration: 40 days</p>
+            <p>Total Income: ₦249,600</p>
+            <button class="invest-btn">Invest</button>
+        </div>
+
+        <!-- Guava -->
+        <div class="product-card" data-product="Guava" data-price="280000" data-daily-income="12480" data-duration="42" data-total-income="524160">
+            <img src="gu.png" alt="Guava">
+            <h2>Guava</h2>
+            <p>Price: ₦280,000</p>
+            <p>Daily Income: ₦12,480</p>
+            <p>Duration: 42 days</p>
+            <p>Total Income: ₦524,160</p>
+            <button class="invest-btn">Invest</button>
+        </div>
+    </main>
+    <style>
+    #email-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 2px;
+            width: 70px;
+            height: 70px;
+            Top: 220px;
+            
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        #email-icon:hover {
+            transform: scale(1.1);
+        }
+
+        #email-icon img {
+            width: 70px;
+            height: 70px;
+            Border-radius: 50%;
+        }
+</style>
+
+<div id="email-icon">
+    <img src="sup.png" alt="Support Icon">
+</div>
+
+<script>
+    document.getElementById('email-icon').addEventListener('click', function () {
+        const email = 'fruitwealthfarming@gmail.com';
+        const subject = encodeURIComponent("Customer Inquiry from Fruit Wealth Farming Invest");
+        const body = encodeURIComponent("Dear Fruit Wealth Farming,\n\nI have questions regarding your services. Please assist.\n\nThank you.");
+        const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+        window.location.href = mailtoUrl;
+    });
+</script>
+
+    <footer>
+        <p>&copy; 2024 Fruit Wealth Farming. All rights reserved.</p>
+    </footer>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+    authDomain: "fruit-wealth-farming.firebaseapp.com",
+    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
+    projectId: "fruit-wealth-farming",
+    storageBucket: "fruit-wealth-farming.appspot.com",
+    messagingSenderId: "417203511096",
+    appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+    measurementId: "G-BZFLHB4KM2"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// Handle investments after verifying user is logged in
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const userId = user.uid;
+        document.querySelectorAll('.invest-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const productCard = e.target.closest('.product-card');
+                const product = productCard.dataset.product;
+                const price = productCard.dataset.price;
+
+                const userRef = ref(db, `users/${userId}`);
+
+                // Fetch user data
+                try {
+                    const snapshot = await get(child(userRef, 'accountNumber'));
+                    if (snapshot.exists()) {
+                        const { accountNumber, bankName, fullName } = snapshot.val();
+
+                        alert(`Congratulations! You have selected ${product}.
+Account: ${accountNumber} (Copy)
+Bank: ${bankName}
+Full Name: ${fullName}
+Deposit: ₦${price} before 30 minutes End.`);
+
+                        // Set user's investment level in the database
+                        await set(ref(db, `users/${userId}/level`), `level-${product}`);
+                    } else {
+                        alert("Please update your profile with account details before investing.");
+                        window.location.href = 'profile.html';
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                    alert("An error occurred. Please try again later.");
+                }
+            });
+        });
+    } else {
+        alert("Please log in to invest.");
+    }
+});
+
+    </script>
+</body>
+
+</html>

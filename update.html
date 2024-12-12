@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Password</title>
+    <style>
+        /* Styles na zamani */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2beaff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 300px;
+            width: 80%;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+        }
+        input[type="password"] {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #9bff6a;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #message {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Update Password</h2>
+        <form id="updatePasswordForm">
+            <input type="password" id="newPassword" placeholder="Enter New Password" required>
+            <button type="submit">Update Password</button>
+            <p id="message"></p>
+        </form>
+    </div>
+
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getAuth, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+  // Sabon Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+    authDomain: "fruit-wealth-farming.firebaseapp.com",
+    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com/",
+    projectId: "fruit-wealth-farming",
+    storageBucket: "fruit-wealth-farming.firebasestorage.app",
+    messagingSenderId: "417203511096",
+    appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+    measurementId: "G-BZFLHB4KM2"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Handle Password Reset Form
+  document.getElementById('updatePasswordForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const newPassword = document.getElementById('newPassword').value;
+    const message = document.getElementById('message');
+    const oobCode = new URLSearchParams(window.location.search).get('oobCode');
+
+    try {
+      await confirmPasswordReset(auth, oobCode, newPassword);
+      message.textContent = "Your new password has been successfully updated!";
+      message.style.color = "green";
+
+      // Jira na seconds 2 kafin ya kai user zuwa login page
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2000);
+
+    } catch (error) {
+      message.textContent = "Failed to update password. Try again.";
+      message.style.color = "red";
+    }
+  });
+</script>
+</body>
+</html>

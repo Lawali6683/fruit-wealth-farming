@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Fruit Wealth Farming</title>
+  <style>
+      body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+
+.center {
+  max-width: 400px;
+  margin: 100px auto;
+  padding: 20px;
+  background: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+}
+
+label {
+  display: block;
+  margin: 10px 0 5px;
+}
+
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+header {
+  background: #007bff;
+  color: white;
+  padding: 10px 20px;
+}
+
+header nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+header nav ul li {
+  font-size: 20px;
+}
+
+main {
+  padding: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  Font-size: 10px;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+table th {
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+.hidden {
+  display: none;
+}
+
+#top-referrals-table{
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+      font-weight: bold;
+    }
+    .summary2 {
+      margin-bottom: 20px;
+      Text-align: center;
+    }
+   .center{
+       Text-align: center;
+   }
+
+  </style>  
+</head>
+<body>
+  <div id="login-section" class="center">
+    <h2>Admin Login</h2>
+    <form id="loginForm">
+      <label for="email">Admin Email Address:</label>
+      <input type="email" id="email" placeholder="Enter Admin Email" required>
+      <label for="password">Admin Password:</label>
+      <input type="password" id="password" placeholder="Enter Password" required>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <div id="admin-panel" class="hidden">
+    <header>
+      <h1>Admin Dashboard</h1>
+      <nav>
+        <ul>
+         <p> <li>Total Registered Users: <span id="total-users">0</span></li></p>                  
+        </ul>
+      </nav>
+    </header>
+    <div class="summary2">
+    <p><li><strong>Users Daily Income Total:</strong> ₦<span id="daily-income-total">0.00</span></li></p>
+    <p><li><strong>Users Withdrawal Balance Total:</strong> ₦<span id="withdrawal-balance-total">0.00</span></li></p>
+  
+
+<p> <li><strong>Total Users Invest: ₦<span id="total-invested">0.00</span></strong></li></p>
+
+<p><li><strong>Your Squad Balance: <span id="squad-balance">₦0.00</span></li></strong></p>
+</div>
+
+    <main>
+      <section>
+        <h2>Users Summary</h2>
+        <table id="users-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Full Name</th>
+              <th>Investment (₦)</th>
+              <th>Daily Income (₦)</th>
+              <th>Withdrawal Balance (₦)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+ <h3>Top 20 Users by Referrals</h3>
+  <table id="top-referrals-table">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>User ID</th>
+        <th>Full Name</th>
+        <th>Referrals</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Top 20 Users by Referral Register Count</h3>
+  <table id="top-referral-count-table">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>User ID</th>
+        <th>Full Name</th>
+        <th>Referral Register Count</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+      <section>
+        <h2>Top Referrals</h2>
+        <ol id="top-referrals"></ol>
+      </section>
+
+      <section>
+        <h2>Top Referral Count</h2>
+        <ol id="top-referral-count"></ol>
+      </section>
+
+      <section>
+        <h2>Withdrawal History</h2>
+        <table id="withdrawal-history">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Amount (₦)</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+      <button id="showResultsButton">Show Results</button>
+
+      <section id="result-received" class="hidden">
+        <h2>Results Received</h2>
+        <form id="result-form">
+          <label for="amount">Amount:</label>
+          <input type="number" id="amount" placeholder="Enter Amount" required>
+          <label for="bank-number">Admin Bank Number:</label>
+          <input type="text" id="bank-number" placeholder="Enter Bank Number" required>
+          <label for="account-name">Admin Account Name:</label>
+          <input type="text" id="account-name" placeholder="Enter Account Name" required>
+          <label for="bank-code">Admin Bank Code:</label>
+          <input type="text" id="admin-bank-code" placeholder="Enter Bank Code" required>
+          <label for="admin-password">Admin Password:</label>
+          <input type="password" id="admin-password" placeholder="Enter Password" required>
+          <button type="submit">Submit</button>
+        </form>
+      </section>
+    </main>
+  </div>
+<button><a href="dataAdmin.html" >Data payment</a></button>
+  <script type="module">
+    // Import Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+      authDomain: "fruit-wealth-farming.firebaseapp.com",
+      databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
+      projectId: "fruit-wealth-farming",
+      storageBucket: "fruit-wealth-farming.appspot.com",
+      messagingSenderId: "417203511096",
+      appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+      measurementId: "G-BZFLHB4KM2",
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // Admin emails
+    const allowedEmails = ["fruitwealthfarming@gmail.com", "harunalawali5522@gmail.com", "lawaliharuna943@gmail.com"];
+
+    // DOM Elements
+    const loginForm = document.getElementById("loginForm");
+    const adminPanel = document.getElementById("admin-panel");
+    const loginSection = document.getElementById("login-section");
+    const usersTableBody = document.querySelector("#users-table tbody");
+    const totalUsers = document.getElementById("total-users");
+    const totalInvested = document.getElementById("total-invested");
+    const squadBalance = document.getElementById("squad-balance");
+    const resultForm = document.getElementById("result-form");
+
+    // Handle Admin Login
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (!allowedEmails.includes(email)) {
+        alert("Unauthorized email! Please use an approved admin email.");
+        return;
+      }
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Login successful!");
+        verifyAdminPassword();
+      } catch (error) {
+        alert("Login failed! Please check your credentials.");
+        console.error(error);
+      }
+    });
+
+    // Verify Admin Password
+    async function verifyAdminPassword() {
+      const enteredPassword = prompt("Please enter the admin password:");
+
+      if (enteredPassword !== "Haruna@66") {
+        alert("Incorrect password! You cannot access the admin dashboard.");
+        return;
+      }
+
+      loadDashboard();
+    }
+
+    // Load Admin Dashboard
+    async function loadDashboard() {
+      loginSection.style.display = "none";
+      adminPanel.style.display = "block";
+
+      const usersSnapshot = await get(ref(db, "users"));
+      const usersData = usersSnapshot.val();
+
+      let totalUsersCount = 0;
+      let totalInvestedAmount = 0;
+      let totalDailyIncomeAmount = 0;
+      let totalWithdrawalBalanceAmount = 0;
+
+      usersTableBody.innerHTML = "";
+      for (const userId in usersData) {
+        const user = usersData[userId];
+        const investment = parseFloat(user.investment || 0);
+        const dailyIncome = parseFloat(user.dailyUpgrade || 0);
+        const withdrawalBalance = parseFloat(user.userBalance || 0);
+
+        const row = `
+          <tr>
+            <td>${user.email}</td>
+            <td>${user.fullName}</td>
+            <td>₦${investment.toFixed(2)}</td>
+            <td>₦${dailyIncome.toFixed(2)}</td>
+            <td>₦${withdrawalBalance.toFixed(2)}</td>
+          </tr>
+        `;
+        usersTableBody.insertAdjacentHTML("beforeend", row);
+
+        totalUsersCount++;
+        totalInvestedAmount += investment;
+        totalDailyIncomeAmount += dailyIncome;
+        totalWithdrawalBalanceAmount += withdrawalBalance;
+      }
+
+      totalUsers.textContent = totalUsersCount;
+      totalInvested.textContent = totalInvestedAmount.toFixed(2);
+
+      fetchSquadBalance();
+    }
+
+    // Fetch Squad Balance
+    async function fetchSquadBalance() {
+      const squadSecretKey = "sk_1fd82d88361a0cad8cd7aac43f92e4c6a24b7dbe";
+
+      try {
+        const response = await fetch("https://api.squadpay.com/v1/balance", {
+          headers: {
+            Authorization: `Bearer ${squadSecretKey}`,
+          },
+        });
+        const data = await response.json();
+        squadBalance.textContent = `₦${data.balance.toFixed(2)}`;
+      } catch (error) {
+        console.error("Failed to fetch Squad balance:", error);
+      }
+    }
+
+    // Handle Results Form (Withdrawal)
+    let buttonClickCount = 0;
+    document.querySelector("#showResultsButton").addEventListener("click", () => {
+      buttonClickCount++;
+      if (buttonClickCount === 5) {
+        document.getElementById("result-received").style.display = "block";
+        buttonClickCount = 0;
+      }
+    });
+
+    
+
+// Define bank codes mapping
+const bankCodes = {
+  "First Bank": "011",
+  "Wema Bank": "035",
+  "UBA": "033",
+  "Opay": "035" 
+};
+
+// Handle withdrawal form submission
+resultForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const amount = document.getElementById("amount").value;
+  const bankName = document.getElementById("bank-name").value;
+  const adminBankCode = document.getElementById("admin-bank-code").value;
+  const userPassword = document.getElementById("user-password").value;
+  const userEmail = await getUserEmail(); // Fetch the email from user auth
+
+  // Check if the entered admin bank code is correct
+  if (adminBankCode !== "4567/&") {
+    alert("Invalid admin bank code.");
+    return;
+  }
+
+  // Validate admin password from Firebase
+  const isValidAdmin = await validateAdminPassword(userEmail, userPassword);
+  if (!isValidAdmin) {
+    alert("Invalid admin password.");
+    return;
+  }
+
+  // Check if the selected bank is valid for withdrawal
+  if (!bankCodes[bankName]) {
+    alert("Invalid bank name.");
+    return;
+  }
+
+  // Prepare withdrawal data
+  const bankCode = bankCodes[bankName];
+  const withdrawalAmount = parseFloat(amount);
+  
+  // Check for valid amount
+  if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+    alert("Please enter a valid amount.");
+    return;
+  }
+
+  // Proceed with the withdrawal using the Squad API
+  try {
+    const squadSecretKey = "sk_1fd82d88361a0cad8cd7aac43f92e4c6a24b7dbe";
+    const response = await fetch("https://api.squadpay.com/v1/withdrawals", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${squadSecretKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: withdrawalAmount,
+        bankCode: bankCode, // Send the bank code for the selected bank
+      }),
+    });
+
+    const result = await response.json();
+    if (result.status === "success") {
+      alert("Withdrawal successful!");
+    } else {
+      alert("Withdrawal failed! Please try again.");
+    }
+  } catch (error) {
+    console.error("Error processing withdrawal:", error);
+    alert("Withdrawal failed! Please check your details.");
+  }
+});
+
+// Validate Admin Password from Firebase
+async function validateAdminPassword(email, password) {
+  const adminEmails = ["harunalawali5522@gmail.com", "fruitwealthfarming@gmail.com", "lawaliharuna943@gmail.com"];
+  
+  // Check if the email is valid
+  if (!adminEmails.includes(email)) {
+    return false;
+  }
+  
+  // Fetch the admin password from Firebase using the email
+  const adminEmailSnapshot = await get(ref(db, 'adminPassword/' + email));
+  const adminPassword = adminEmailSnapshot.val();
+
+  // Check if the password matches
+  return adminPassword === password;
+}
+
+// Function to fetch the user's email (you should implement Firebase UID authorization)
+async function getUserEmail() {
+  const user = await firebase.auth().currentUser;
+  return user ? user.email : null;
+}
+
+    
+    
+    async function fetchDashboardData() {
+  try {
+    const dbRef = firebase.database().ref("users");
+    const snapshot = await dbRef.once("value");
+
+    if (snapshot.exists()) {
+      const users = snapshot.val();
+      let dailyIncomeTotal = 0;
+      let withdrawalBalanceTotal = 0;
+
+      const referrals = [];
+      const referralCounts = [];
+
+      Object.entries(users).forEach(([userId, user]) => {
+        // Calculate totals
+        dailyIncomeTotal += parseFloat(user.dailyUpgrade || 0);
+        withdrawalBalanceTotal += parseFloat(user.userBalance || 0);
+
+        // Referrals
+        if (user.referralBy) {
+          const referrer = referrals.find(r => r.userId === user.referralBy);
+          if (referrer) {
+            referrer.count++;
+          } else {
+            referrals.push({ userId: user.referralBy, count: 1, fullName: user.fullName || "Unknown" });
+          }
+        }
+
+        // Referral Count
+        if (user.referralCount && user.fullName) {
+          referralCounts.push({
+            userId,
+            count: parseInt(user.referralCount),
+            fullName: user.fullName
+          });
+        }
+      });
+
+      // Update totals
+      document.getElementById("daily-income-total").textContent = dailyIncomeTotal.toFixed(2);
+      document.getElementById("withdrawal-balance-total").textContent = withdrawalBalanceTotal.toFixed(2);
+
+      // Sort and display referrals
+      referrals.sort((a, b) => b.count - a.count);
+      displayTopReferrals(referrals.slice(0, 20));
+
+      // Sort and display referral counts
+      referralCounts.sort((a, b) => b.count - a.count);
+      displayTopReferralCounts(referralCounts.slice(0, 20));
+    }
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+  }
+}
+
+function displayTopReferrals(referrals) {
+  const tableBody = document.querySelector("#top-referrals-table tbody");
+  tableBody.innerHTML = ""; // Clear previous data
+
+  referrals.forEach((ref, index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${ref.userId}</td>
+      <td>${ref.fullName}</td>
+      <td>${ref.count}</td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function displayTopReferralCounts(referralCounts) {
+  const tableBody = document.querySelector("#top-referral-count-table tbody");
+  tableBody.innerHTML = ""; // Clear previous data
+
+  referralCounts.forEach((ref, index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${ref.userId}</td>
+      <td>${ref.fullName}</td>
+      <td>${ref.count}</td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+
+  </script>
+</body>
+</html>

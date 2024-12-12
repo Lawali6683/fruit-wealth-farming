@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Income</title>
+  <style>
+      /* Global Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #00ff00;
+  color: #333;
+}
+
+h1, h2, p {
+  margin: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+header {
+    background-color: blue;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo img {
+    width: 50px;
+    margin-right: 10px;
+}
+
+main {
+    padding: 20px;
+    text-align: center;
+}
+
+.user-info h2 {
+    font-size: 26px;
+    margin-bottom: 8px;
+    
+}
+
+/* User Info */
+.user-info {
+  text-align: center;
+  margin: 1rem 0;
+  Color: #4caf50;
+  Font-weight: bold;
+}
+
+.user-info p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+/* Income Section */
+.income-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 2rem;
+}
+
+.image-container7 {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 2px 5px 150px rgba(90, 40, 60, 80.8);
+    cursor: pointer;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+
+.progress-circle {
+
+position: relative;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  border: 10px solid #ddd;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to bottom, #f0f0f0, #e8e8e8);
+}
+
+
+  
+.progress-circle img {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+#timer {
+
+  position: absolute;
+  bottom: 10%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.3rem 0.7rem;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* Button */
+button {
+  margin-top: 1.5rem;
+  padding: 0.7rem 1.5rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+footer {
+    background-color: blue;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+}
+
+  </style>    
+</head>
+<body>
+  
+  <header>
+        <div class="logo">
+            <img src="fruit.png" alt="Fruit Wealth Farming Logo">
+            <h1>Fruit Wealth Farming</h1>
+        </div>
+    </header>
+
+  <!-- User Info -->
+  <section class="user-info">
+    <p style="color: blue;">Welcome, <span id="userFullName"></span></p>
+    <p style="color: blue;">You can upgrade your daily income profit every 24 hours.</p>
+    <p id="investmentMessage" class="hidden" style="color: red">Invest before getting daily profit</p>
+  </section>
+
+  <!-- Income Progress Section -->
+  <section class="income-section">
+    <div class="image-container7">
+      <div class="progress-circle">
+        <img id="levelImage" src="avatar.png" alt="User Level Image">
+        <div id="timer">24:00:00</div>
+      </div>
+    </div>
+    <button id="collectIncomeBtn" class="hidden">Collect Income</button>
+  </section>
+
+
+
+  <style>   
+    .carousel-container {
+      width: 100%;
+      max-width: 800px;
+      overflow: hidden;
+      margin: 50px auto;
+      position: relative;
+      border-radius: 10px;
+      
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .image-container {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .carousel-item {
+      min-width: 100%;
+      position: relative;
+      text-align: center;
+    }
+
+    .carousel-item img {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    
+    .caption-top {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      
+      color: blue;
+      padding: 5px 10px
+      border-radius: 5px;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    /* Caption at the bottom of the image */
+    .caption-bottom {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      
+      color: blue;
+      padding: 10px 20px
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    /* Buttons for Manual Navigation */
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%); 
+           background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+
+    .prev {
+      left: 10px;
+    }
+
+    .next {
+      right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="carousel-container">
+  <div class="image-container" id="imageContainer">
+    <div class="carousel-item">
+      <img src="ba.png" alt="Image 1">
+      <div class="caption-top">Invest ₦3,500 </div>
+      <div class="caption-bottom">Daily Profit ₦160, end 35 days, Total ₦5,600</div>
+    </div>
+    <div class="carousel-item">
+      <img src="or.png" alt="Image 2">
+      <div class="caption-top">Invest ₦8,000</div>
+      <div class="caption-bottom">Daily Profit ₦390, end 35 days, Total ₦13,650</div>
+    </div>
+    <div class="carousel-item">
+      <img src="ap.png" alt="Image 3">
+      <div class="caption-top">Invest ₦15,000 </div>
+      <div class="caption-bottom">Daily Profit ₦780, end 35 days, Total ₦28,080</div>
+    </div>
+    <div class="carousel-item">
+      <img src="av.png" alt="Image 4">
+      <div class="caption-top">Invest ₦35,000 </div>
+      <div class="caption-bottom">Daily Profit ₦1,560, end 37 days, Total ₦57,720</div>
+    </div>
+    <div class="carousel-item">
+      <img src="be.png" alt="Image 5">
+      <div class="caption-top">Invest ₦70,000</div>
+      <div class="caption-bottom">Daily Profit ₦3,120, end 39 days, Total ₦121,680</div>
+    </div>
+    <div class="carousel-item">
+      <img src="man.png" alt="Image 6">
+      <div class="caption-top">Invest ₦140,000 </div>
+      <div class="caption-bottom">Daily Profit ₦6,240, end 40 days, Total ₦249,600</div>
+    </div>
+    <div class="carousel-item">
+      <img src="gu.png" alt="Image 7">
+      <div class="caption-top">Invest ₦280,000 </div>
+      <div class="caption-bottom">Daily Profit ₦12,480, end 42 days, Total ₦524,160</div>
+    </div>
+  </div>
+  <button class="carousel-btn prev" onclick="prevSlide()">&#10094;</button>
+  <button class="carousel-btn next" onclick="nextSlide()">&#10095;</button>
+</div>
+
+<script>
+  const imageContainer = document.getElementById('imageContainer');
+  const carouselItems = document.querySelectorAll('.carousel-item');
+  const totalItems = carouselItems.length;
+
+  let currentIndex = 0;
+
+  function showSlide(index) {
+    const offset = -index * 100; 
+    imageContainer.style.transform = `translateX(${offset}%)`;
+  }
+
+  function nextSlide() {
+    currentIndex = (currentIndex + 1) % totalItems; 
+    showSlide(currentIndex);
+  }
+
+  function prevSlide() {
+    currentIndex = (currentIndex - 1 + totalItems) % totalItems; 
+    showSlide(currentIndex);
+  }
+
+  // Autoplay the carousel
+  setInterval(nextSlide, 3500); 
+</script>
+
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2024 Fruit Wealth Farming</p>
+  </footer>
+  
+  
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+      authDomain: "fruit-wealth-farming.firebaseapp.com",
+      databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
+      projectId: "fruit-wealth-farming",
+      storageBucket: "fruit-wealth-farming.firebasestorage.app",
+      messagingSenderId: "417203511096",
+      appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+      measurementId: "G-BZFLHB4KM2"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Global Variables
+    const timerElement = document.getElementById("timer");
+    const levelImage = document.getElementById("levelImage");
+    const collectIncomeBtn = document.getElementById("collectIncomeBtn");
+    const investmentMessage = document.getElementById("investmentMessage");
+    let countdownInterval;
+    let dailyUpgrade = 0;
+    let timeLeft = 24 * 60 * 60; // 24 hours in seconds
+
+    // Utility Functions
+    const formatTime = (seconds) => {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    // Load User Data from Firebase based on Auth UID
+    const loadUserData = (userId) => {
+      const userRef = ref(db, `users/${userId}`);
+      onValue(userRef, (snapshot) => {
+        const userData = snapshot.val();
+
+        if (userData) {
+          document.getElementById("userFullName").textContent = userData.fullName;
+
+          // Handle Daily Upgrade and User Balance
+          dailyUpgrade = userData.dailyUpgrade || 0;
+          if (dailyUpgrade === 0) {
+            investmentMessage.classList.remove("hidden");
+            collectIncomeBtn.classList.add("hidden");
+            timeLeft = 0;
+          } else {
+            investmentMessage.classList.add("hidden");
+            collectIncomeBtn.classList.remove("hidden");
+            startCountdown();
+          }
+
+          // Update Level Image
+          const levelImages = {
+            Banana: "ba.png",
+            Orenge: "or.png",
+            Apple: "ap.png",
+            Avocados: "av.png",
+            Berry: "be.png",
+            Mango: "man.png",
+            Guava: "gu.png",
+          };
+          levelImage.src = levelImages[userData.level] || "avatar.png";
+        } else {
+          console.error("User data not found in Firebase!");
+        }
+      });
+    };
+
+    // Handle Countdown Timer
+    const startCountdown = () => {
+      if (dailyUpgrade === 0) {
+        console.log("User has not invested, timer will not start.");
+        return;
+      }
+
+      clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          timerElement.textContent = formatTime(timeLeft);
+          updateProgressBar();
+        } else {
+          clearInterval(countdownInterval);
+          timerElement.textContent = "00:00:00";
+          collectIncomeBtn.classList.remove("hidden");
+        }
+      }, 1000);
+    };
+
+    // Update Progress Bar
+    const updateProgressBar = () => {
+      const progress = ((24 * 60 * 60 - timeLeft) / (24 * 60 * 60)) * 100;
+      document.querySelector(".progress-circle").style.background = `conic-gradient(
+        #4caf50 ${progress}%,
+        #ddd ${progress}%
+      )`;
+    };
+
+    // Collect Daily Income
+    const collectDailyIncome = async (userId) => {
+      if (timeLeft === 0) {
+        console.error("Cannot collect income. Either timer has not started or dailyUpgrade is 0.");
+        return;
+      }
+
+      const userRef = ref(db, `users/${userId}`);
+      const snapshot = await onValue(userRef, (snapshot) => snapshot.val());
+      const userData = snapshot.val();
+      const newBalance = (userData.userBalance || 0) + dailyUpgrade;
+
+      await update(userRef, { userBalance: newBalance });
+
+      timeLeft = 24 * 60 * 60;
+      startCountdown();
+      collectIncomeBtn.classList.add("hidden");
+    };
+
+    // Mining WebMinePool API
+    const startMining = () => {
+      const user = auth.currentUser;
+      if (user && dailyUpgrade > 0) {
+        console.log("Starting mining for user:", user.uid);
+        // Simulated mining process for demo
+        setTimeout(() => {
+          console.log("Mining completed!");
+        }, 5000);
+      } else {
+        console.error("Mining cannot start because the user has not invested.");
+      }
+    };
+
+    // Event Listeners
+    collectIncomeBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (user && dailyUpgrade > 0) {
+        await collectDailyIncome(user.uid);
+        startMining();  // Start mining after collecting income
+      } else {
+        console.log("User is not authenticated or no dailyUpgrade.");
+      }
+    });
+
+    // Initialize App after Authentication
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("User is logged in:", user.uid);
+        loadUserData(user.uid);
+        startCountdown();
+      } else {
+        console.log("No user is logged in.");
+      }
+    });
+  </script>
+</body>
+</html>
