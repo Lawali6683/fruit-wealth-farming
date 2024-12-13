@@ -1707,7 +1707,19 @@ Minimum Withdrawal: You can withdraw starting from ₦500.
 </footer>
 
  </p>
+<script>
+  // Function don samun referral code daga URL
+  function getReferralCode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("ref");
+  }
 
+  // Adana referral code a cikin Local Storage
+  const referralCode = getReferralCode();
+  if (referralCode) {
+    localStorage.setItem("referralCode", referralCode);
+  }
+</script>
 <script>
         function toggleMenu() {
             const nav = document.querySelector('.nav');
