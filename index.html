@@ -595,15 +595,37 @@ h3:hover {
             height: 70px;
             Border-radius: 50%;
         }
-      
-       
-       
+                  
     </style>
+    
 </head>
 <body>
-    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const fruitImage = document.getElementById('fruitImage');
+    let clickCount = 0;
+    let clickTimeout;
+
+    fruitImage.addEventListener('click', () => {
+        clickCount++;
+
+        // Sake lissafi idan ya daina danna cikin 1s
+        if (clickTimeout) clearTimeout(clickTimeout);
+
+        clickTimeout = setTimeout(() => {
+            clickCount = 0;
+        }, 1000); // Sake lissafi bayan 1 second
+
+        // Idan aka danna sau 5 cikin lokaci daya
+        if (clickCount === 5) {
+            window.location.href = 'admin.html'; // Tura zuwa shafin admin.html
+        }
+    });
+});
+
+    </script>
     <header     class="header">
-        <img src="fruit.png" class="Fruit">
+        <img src="fruit.png" class="Fruit" id="fruitImage">
         <div class="logo">
             <h1 class="ghj"><span class="fruit" >Fruit</span> <span class="wealth">Wealth</span> <span class="farmin">Farming</span></h1>
         </div>
