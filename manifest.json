@@ -1,7 +1,7 @@
 {
   "name": "Fruit Wealth Farming",
   "short_name": "FWF",
-  "start_url": "/repo-name/index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
