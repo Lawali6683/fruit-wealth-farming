@@ -149,8 +149,6 @@
 <script type="text/javascript">
         atOptions = { 'key': '92c2aa4ec38ed888d4142e7b9192188d', 'format': 'iframe', 'height': 250, 'width': 300, 'params': {} };
     </script>
-    <script type="text/javascript" src="//www.highperformanceformat.com/92c2aa4ec38ed888d4142e7b9192188d/invoke.js"></script>
-    
     <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
   import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
@@ -183,15 +181,27 @@
   const username2 = document.getElementById('username2');
   const dataBalance = document.getElementById('dataBalance');
 
-  // Check if the user has already visited this page
-  if (sessionStorage.getItem("visitedPage")) {
-    // Redirect to dashboard.html if already visited
-    window.location.replace('dashboard.html');
+  // Check Session Expiration
+  function checkSessionExpiration() {
+    const lastVisitTime = sessionStorage.getItem("lastVisitTime");
+    if (lastVisitTime) {
+      const timeElapsed = (Date.now() - parseInt(lastVisitTime, 10)) / (1000 * 60); // Time in minutes
+      if (timeElapsed < 5) {
+        // Redirect to dashboard.html if 5 minutes haven't passed
+        window.location.replace('dashboard.html');
+      } else {
+        // Allow access and clear session data after 5 minutes
+        sessionStorage.removeItem("lastVisitTime");
+      }
+    }
   }
 
-  // Set visitedPage to true when user completes the task
+  // Check session expiration on page load
+  checkSessionExpiration();
+
+  // Set sessionStorage when user clicks "Continue"
   continueButton.addEventListener('click', () => {
-    sessionStorage.setItem("visitedPage", "true"); // Mark the page as visited
+    sessionStorage.setItem("lastVisitTime", Date.now().toString()); // Save current time
     window.location.replace('taskData.html');
   });
 
@@ -247,11 +257,11 @@
     }
   }
 
-  // Prevent Back Navigation (after Continue button click)
+  // Prevent Back Navigation
   window.history.pushState(null, null, window.location.href);
   window.onpopstate = function () {
     window.location.replace('dashboard.html'); 
   };
-</script>   
+</script>
 </body>
 </html>
