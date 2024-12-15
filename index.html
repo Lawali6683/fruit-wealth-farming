@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fruit Wealth Farming</title>
     <meta property="og:title" content="🌟 You’ve win ₦105K and  ₦20K Every Month with referrals!🎉"/>            
-    <meta property="og:image" content="https://fruit-wealth-farming.vercel.app/lod.png" />
+    <meta property="og:image" content="https://fruit-wealth-farming.vercel.app/df.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:url" content="https://fruit-wealth-farming.vercel.app/" />  
@@ -23,13 +23,15 @@
   }
 
     .header {
-          width: 100%;  background-color: #3115ff;
+       background-color: #3115ff;
+           
             Text-align: center;
             color: white;
-            padding: 15px;
+            padding: 10px;
             position: fixed;
             
             width: 100%;
+         border-bottom: 3px solid #90ff55;  
             top: 0;
             left: 0;
                         z-index: 1000;
@@ -231,6 +233,68 @@
        .fas{
            padding: 30px;
        }
+       
+       button {
+  display: block;
+  margin: 20px auto;
+  padding: 15px 40px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  background: linear-gradient(90deg, #ff007a, #00d4ff);
+  background-size: 300% 300%;
+  animation: gradientShift 4s infinite;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2), 0px 0px 15px rgba(255, 0, 122, 0.5);
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+button:hover {
+  transform: translateY(-5px) scale(1.1);
+  box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.3), 0px 0px 25px rgba(0, 212, 255, 0.7);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.8);
+  animation: particleEffect 2s infinite ease-in-out;
+}
+
+@keyframes particleEffect {
+  0% {
+    transform: scale(1) translate(-50%, -50%);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(5) translate(-50%, -50%);
+    opacity: 0;
+  }
+}
+
+
   </style>
   
   <style>
@@ -624,11 +688,18 @@ h3:hover {
 });
 
     </script>
-    <header     class="header">
+    <header     class="header">        
         <img src="fruit.png" class="Fruit" id="fruitImage">
         <div class="logo">
             <h1 class="ghj"><span class="fruit" >Fruit</span> <span class="wealth">Wealth</span> <span class="farmin">Farming</span></h1>
         </div>
+        <style>
+           .menu-icon{
+         Background-color:#ff0000; 
+         Border-radius: 50%;
+        border-bottom: 5px solid #90ff55;
+           }
+        </style>
         <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
         <nav class="nav">
             <ul>
@@ -655,6 +726,7 @@ h3:hover {
 
 
     <section id="showcase">
+        
         <div class="container4">
             <h3>Investment Opportunities Available!</h3>
             <p>We invite you to invest in high-return opportunities with guaranteed daily earnings. This is a unique chance to grow your investment and secure steady income!</p>
@@ -685,7 +757,7 @@ h3:hover {
         <img class="hoto" src="do.png">
     </p>
 
-
+<button id="install-btn">Install App</button>
   <style>
     
     .container89 {
@@ -865,7 +937,7 @@ h3:hover {
   <button class="carousel-btn prev" onclick="prevSlide()">&#10094;</button>
   <button class="carousel-btn next" onclick="nextSlide()">&#10095;</button>
 </div>
-
+<img src="df.png" style="width: 100%;">
 <script>
   const imageContainer = document.getElementById('imageContainer');
   const carouselItems = document.querySelectorAll('.carousel-item');
@@ -1687,8 +1759,9 @@ Minimum Withdrawal: You can withdraw starting from ₦500.
       setInterval(showNextSlide, 3000); // Change slide every 3 seconds
     });
   </script> 
-        </p>
+        </p>        
     </section>
+    <button id="install-btn">Install App</button>
         <footer>
             <p>👉 Don’t Miss Out! Join Now and Start Earning!</p>
             <button  onclick="window.location.href='register.html'" > Click here to Join</button>
@@ -1726,5 +1799,40 @@ Minimum Withdrawal: You can withdraw starting from ₦500.
             nav.classList.toggle('active');
         }
     </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('/sw.js')
+    .then(() => console.log('Service Worker registered successfully'))
+    .catch((error) => console.error('Service Worker registration failed:', error));
+}
+
+// Install prompt event
+let deferredPrompt;
+const installButton = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installButton.style.display = 'block'; // Show install button
+
+  installButton.addEventListener('click', () => {
+    installButton.style.display = 'none'; // Hide the button
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        alert('Fruit Wealth Farming App installed successfully!');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      deferredPrompt = null;
+    });
+  });
+});
+
+    </script>
+    <link rel="manifest" href="/manifest.json">
+<script src="/sw.js" defer></script>
     </body>
     </html>
