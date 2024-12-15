@@ -155,18 +155,82 @@ input:focus {
 h1{
     Color: white;
 }
+
+ #install-btn {
+  display: block;
+  margin: 20px auto;
+  padding: 15px 40px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  background: linear-gradient(90deg, #ff007a, #00d4ff);
+  background-size: 300% 300%;
+  animation: gradientShift 4s infinite;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2), 0px 0px 15px rgba(255, 0, 122, 0.5);
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+#install-btn:hover {
+  transform: translateY(-5px) scale(1.1);
+  box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.3), 0px 0px 25px rgba(0, 212, 255, 0.7);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+#install-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.8);
+  animation: particleEffect 2s infinite ease-in-out;
+}
+
+@keyframes particleEffect {
+  0% {
+    transform: scale(1) translate(-50%, -50%);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(5) translate(-50%, -50%);
+    opacity: 0;
+  }
+}
     </style>        
 </head>
 <body>
+    
     <div id="loadingScreen" class="loading-screen" style="display: none;">
         <div class="spinner"></div>
         <p>Please wait...</p>
     </div>
 
     <div class="form-container">
+        
         <div class="form-header">
             <h1>Welcome Back to <span>Fruit Wealth Farming</span></h1>
+            <button id="install-btn">Install App</button> 
             <img src="fruit.png" style="width: 100%;">
+          
             <p>Login to access your dashboard</p>
         </div>
 
@@ -183,8 +247,8 @@ h1{
                     <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
                 </div>
             </div>
-
-            <button type="submit" class="btn-primary">Login</button>
+<button type="submit" class="btn-primary">Login</button>
+            
         </form>
 
         <div class="form-footer">
@@ -298,5 +362,40 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 });
 
     </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('/sw.js')
+    .then(() => console.log('Service Worker registered successfully'))
+    .catch((error) => console.error('Service Worker registration failed:', error));
+}
+
+// Install prompt event
+let deferredPrompt;
+const installButton = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installButton.style.display = 'block'; // Show install button
+
+  installButton.addEventListener('click', () => {
+    installButton.style.display = 'none'; // Hide the button
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        alert('Fruit Wealth Farming App installed successfully!');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      deferredPrompt = null;
+    });
+  });
+});
+
+    </script>
+    <link rel="manifest" href="/manifest.json">
+<script src="/sw.js" defer></script>
     </body>
 </html>
