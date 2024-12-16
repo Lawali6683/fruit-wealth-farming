@@ -4,163 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fruit Wealth Farming - Registration</title>
-    <style>
+       <style>
         /* General Reset */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(to bottom, #4CAF50, #87CEEB);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    color: white;
-}
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #4CAF50, #87CEEB);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
 
-/* Loading Screen */
-.loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    z-index: 1000;
-}
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+        }
 
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #fff;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
-/* Form Container */
-.form-container {
-    background: black;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 400px;
-}
+        /* Form Container */
+        .form-container {
+            background: black;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
 
-.form-header h1 {
-    text-align: center;
-    font-size: 26px;
-    margin-bottom: 10px;
-}
+        .form-header h1 {
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
 
-.form-header span {
-    color: #4CAF50;
-    font-weight: bold;
-}
+        .form-header span {
+            color: #4CAF50;
+            font-weight: bold;
+        }
 
-.form-header p {
-    text-align: center;
-    font-size: 14px;
-    color: #666;
-}
+        .form-header p {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
 
-/* Form Styles */
-.form-group {
-    margin-bottom: 20px;
-}
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-label {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
-    color: white;
-}
+        label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            color: white;
+        }
 
-input, select {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    outline: none;
-    transition: all 0.3s ease;
-}
+        input, select {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
 
-input:focus, select:focus {
-    border-color: #4CAF50;
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-}
+        input:focus, select:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
 
-.password-container {
-    position: relative;
-}
+        .password-container {
+            position: relative;
+        }
 
-.toggle-password {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #4CAF50;
-}
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #4CAF50;
+        }
 
-/* Button Styles */
-.btn-primary {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px;
-    width: 100%;
-    font-size: 16px;
-    border-radius: 10px;
-    Border-bottom:4px solid white;
-    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
+        /* Button Styles */
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 10px;
+            Border-bottom:4px solid white;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
 
-.btn-primary:hover {
-    background: #45a049;
-}
+        .btn-primary:hover {
+            background: #45a049;
+        }
 
-/* Footer */
-.form-footer {
-    text-align: center;
-    font-size: 20px;
-    color: white;
-}
+        /* Footer */
+        .form-footer {
+            text-align: center;
+            font-size: 20px;
+            color: white;
+        }
 
-.form-footer a {
-    color: #4CAF50;
-    text-decoration: none;
-    font-weight: bold;
-}
+        .form-footer a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
 
-.form-footer a:hover {
-    text-decoration: underline;
-}
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
 
+        /* Sanya #message a matsayin boye daga farko */
+        .hidden-message {
+            display: none;
+            padding: 20px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
 
-    </style>        
+        /* Kulle shafin idan #message yana bayyana */
+        .message-visible {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 18px;
+            z-index: 1000;
+        }
+
+        .message-visible p {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+    </style>     
 </head>
 <body>
     <div id="loadingScreen" class="loading-screen" style="display: none;">
         <div class="spinner"></div>
         <p>Loading... Please wait</p>
     </div>
+    <!-- Loading screen ko wani loading indicator -->
+<div id="loadingScreen" style="display:none;">Loading...</div>
+
+
+<!-- Sako wanda zai bayyana bayan rajista -->
+<p id="message" class="hidden-message"></p>
+
 
     <div class="form-container">
         <div class="form-header">
@@ -249,10 +288,23 @@ function togglePassword(fieldId) {
     }
 }
 </script>
-<script type="module">
+
+   <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    sendEmailVerification, 
+    deleteUser 
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { 
+    getDatabase, 
+    ref, 
+    set, 
+    update, 
+    remove, 
+    get 
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -274,29 +326,25 @@ const db = getDatabase(app);
 // Default referral code
 const defaultReferralCode = "fboyj4";
 
-// Function don samun referral code
+// Function to retrieve referral code
 function getReferralCode() {
     const storedCode = localStorage.getItem("referralCode");
     return storedCode || defaultReferralCode;
 }
 
-// Adana referral code idan ba a riga an adana shi ba
+// Store referral code from URL on page load
 function storeReferralCode() {
     const urlParams = new URLSearchParams(window.location.search);
     const refFromUrl = urlParams.get("ref");
     if (refFromUrl) {
-        localStorage.setItem("referralCode", refFromUrl);
+        localStorage.setItem("referralCode", refFromUrl.trim());
     }
 }
 
-// Store referral code on page load
-storeReferralCode();
-
-// Function don sarrafa referral code
+// Handle referral code
 async function handleReferralCode() {
     document.getElementById("loadingScreen").style.display = "flex";
-
-    let referralCode = getReferralCode();
+    const referralCode = getReferralCode();
     document.getElementById("referralCode").value = referralCode;
 
     try {
@@ -311,7 +359,7 @@ async function handleReferralCode() {
                     referralCount: (referrerData.referralCount || 0) + 1
                 });
             } else if (referralCode !== defaultReferralCode) {
-                alert("Referral code is not valid. Using the default code.");
+                alert("Referral code is invalid. Using the default code.");
                 document.getElementById("referralCode").value = defaultReferralCode;
             }
         }
@@ -322,7 +370,12 @@ async function handleReferralCode() {
     }
 }
 
-// Function don yin register user
+document.getElementById("registrationForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const referralCode = getReferralCode();
+    await registerUser(referralCode);
+});
+
 async function registerUser(referralCode) {
     document.getElementById("loadingScreen").style.display = "flex";
 
@@ -343,15 +396,13 @@ async function registerUser(referralCode) {
     }
 
     try {
-        // Create user with email and password
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const userId = userCredential.user.uid;
+        const user = userCredential.user;
 
         const generatedReferralCode = Math.random().toString(36).substring(2, 8);
         const referralLink = `https://fruit-wealth-farming.vercel.app/referral?user=${username}&ref=${generatedReferralCode}`;
 
-        // Save full user data
-        await set(ref(db, `users/${userId}`), {
+        await set(ref(db, `users/${user.uid}`), {
             fullName,
             gender,
             county,
@@ -369,29 +420,41 @@ async function registerUser(referralCode) {
             accountNumber: [],
             withdrawalPending: [],
             withdrawalHistory: [],
+           
             registrationDate: new Date().toISOString(),
+            verified: false,
             activeStatus: true
         });
 
-        alert("Registration successful!");
-        window.location.href = "login.html";
+        await sendEmailVerification(user);
 
+        alert("Your Register Sessefuly Verification your Information...");
+        window.location.href = "whaitVerified.html";
+
+        setTimeout(async () => {
+            await auth.currentUser.reload();
+            if (!auth.currentUser.emailVerified) {
+                await deleteUser(auth.currentUser);
+                await remove(ref(db, `users/${user.uid}`));
+                alert("Account deleted due to email verification timeout.");
+            }
+        }, 20 * 60 * 1000); // 20 minutes
     } catch (error) {
-        console.error("Error during registration:", error);
-        alert("Error occurred server: " + error.message);
+        if (error.code === "auth/email-already-in-use") {
+            alert("This email is already registered. Redirecting to login...");
+            window.location.href = "login.html";
+        } else {
+            console.error("Registration error:", error);
+            alert("Error: " + error.message);
+        }
     } finally {
         document.getElementById("loadingScreen").style.display = "none";
     }
 }
 
-// Event listener don form submit
-document.getElementById("registrationForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const referralCode = getReferralCode();
-    await registerUser(referralCode);
-});
 
-// Kira referral code handling lokacin load
+// Run referral code handling on load
+storeReferralCode();
 handleReferralCode();
 </script>
 
