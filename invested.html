@@ -334,7 +334,7 @@ onAuthStateChanged(auth, (user) => {
 Account: ${accountNumber} (Copy)
 Bank: ${bankName}
 Full Name: ${fullName}
-Deposit: ₦${price} before 30 minutes End.`);
+Deposit: ₦${price} in your FWF bank account.`);
 
                         // Set user's investment level in the database
                         await set(ref(db, `users/${userId}/level`), `level-${product}`);
