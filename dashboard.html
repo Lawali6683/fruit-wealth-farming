@@ -241,7 +241,105 @@ width: 70px;
     
  #ing{
      font-size: 10px;
- }   
+ } 
+ 
+.banner{
+    background-image: url("wel.pn");
+  background-size: contain; 
+  background-repeat: no-repeat;
+  background-position: center
+  background-attachment: fixed;
+  
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(8, 0, 0, 0.7);
+  margin-bottom: 20px;
+}
+
+
+#notificationBell {
+      position: fixed;
+      top: 0px;
+      right: 0px;
+      cursor: pointer;
+      width: 60px;
+      height: 60px;
+      background: url('bell.png') no-repeat center center;
+      background-size: contain;
+      z-index: 1000;
+    }
+
+    /* Notification count badge */
+    #notificationCount {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: red;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 20px;
+      display: none; /* Hidden when no notifications */
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Notification dropdown box */
+    #notificationDropdown {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      max-width: 300px;
+      padding: 10px;
+      display: none;
+      z-index: 1000;
+    }
+
+    #notificationDropdown ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #notificationDropdown li {
+      border-bottom: 1px solid #ddd;
+      padding: 8px 0;
+    }
+
+    #notificationDropdown li:last-child {
+      border-bottom: none;
+    }
+
+    #notificationDropdown li p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    #clearNotifications {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+      color: red;
+      cursor: pointer;
+    }
+
+    /* Animation for notification badge */
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.2);
+      }
+    }
+
 </style>      
 </head>
 <body>
@@ -259,13 +357,21 @@ width: 70px;
     </div>
     <div class="profile">
       <img id="avatar" src="avatar.png" alt="Profile Avatar">
-      <input type="file" id="upload-avatar" style="display: none;">
-    </div>
-  </header>
+      <input type="file" id="upload-avatar" style="display: none;">  
+      <div id="notificationBell">
+    <span id="notificationCount"></span>
+  </div>
 
-  <!-- Main Content Section -->
-  <main>
-    <h1 id="greeting">Dashboard, <span id="fullNameDisplay"></span></h1>
+  <div id="notificationDropdown">
+    <ul id="notificationList">
+      
+    </ul>
+    <div id="clearNotifications">Clear All</div>
+  </div>
+  </header> 
+  <div>
+  <main>      
+    <h1 id="greeting">Dashboard, <span id="fullNameDisplay"></span>👋</h1>
 
     <div class="container">
       <div class="info">
@@ -443,7 +549,8 @@ width: 70px;
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
   import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-
+  
+  
   // Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
@@ -575,6 +682,160 @@ width: 70px;
       }
     }
   }
+  
+  
+  // DOM elements
+const notificationBell = document.getElementById("notificationBell");
+const notificationDropdown = document.getElementById("notificationDropdown");
+const notificationCount = document.getElementById("notificationCount");
+const notificationList = document.getElementById("notificationList");
+const clearNotifications = document.getElementById("clearNotifications");
+
+let audioPlayed = false;
+
+// Function to update notification count
+function updateNotificationCount(count) {
+  if (count > 0) {
+    notificationCount.innerText = count;
+    notificationCount.style.display = "block";
+  } else {
+    notificationCount.style.display = "none";
+  }
+}
+
+// Function to render notifications
+function renderNotifications(notifications) {
+  notificationList.innerHTML = ""; // Clear existing notifications
+  if (notifications && Object.keys(notifications).length > 0) {
+    Object.values(notifications).forEach((notif) => {
+      const li = document.createElement("li");
+      const p = document.createElement("p");
+      p.innerText = notif.message;
+      li.appendChild(p);
+      notificationList.appendChild(li);
+    });
+  } else {
+    const li = document.createElement("li");
+    li.innerHTML = "<p>No Notifications</p>";
+    notificationList.appendChild(li);
+  }
+}
+
+// Toggle notification dropdown
+let dropdownVisible = false;
+notificationBell.addEventListener("click", () => {
+  dropdownVisible = !dropdownVisible;
+  notificationDropdown.style.display = dropdownVisible ? "block" : "none";
+
+  // Clear notification count when dropdown is opened
+  if (dropdownVisible) {
+    updateNotificationCount(0);
+    audioPlayed = true;
+  }
+});
+
+// Clear all notifications
+clearNotifications.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (user) {
+    const notificationsRef = ref(db, `users/${user.uid}/notifications`);
+    await set(notificationsRef, null);
+    renderNotifications({});
+    updateNotificationCount(0);
+  }
+});
+
+// Monitor user authentication
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    const notificationsRef = ref(db, `users/${user.uid}/notifications`);
+    const userRef = ref(db, `users/${user.uid}`);
+    let previousData = {};
+
+    // Listen for notifications
+    onValue(notificationsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const notifications = snapshot.val();
+        renderNotifications(notifications);
+
+        const unreadCount = Object.keys(notifications).length;
+        updateNotificationCount(unreadCount);
+
+        if (!audioPlayed && unreadCount > 0) {
+          const audio = new Audio("od.mp3");
+          audio.loop = true;
+          audio.play();
+          setTimeout(() => {
+            audio.pause();
+          }, 50000);
+          audioPlayed = true;
+        }
+      } else {
+        renderNotifications({});
+        updateNotificationCount(0);
+      }
+    });
+
+    // Listen for changes in user data
+    onValue(userRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+
+        // Check for investment changes
+        if (userData.investment > (previousData.investment || 0)) {
+          const newInvestment = userData.investment - (previousData.investment || 0);
+          sendNotification(notificationsRef, `You sent ₦${newInvestment} to your Invest Account (${new Date().toLocaleString()})`);
+        }
+
+        // Check for balance changes
+        if (userData.userBalance > (previousData.userBalance || 0)) {
+          const newBalance = userData.userBalance - (previousData.userBalance || 0);
+          sendNotification(notificationsRef, `You received ₦${newBalance} in your Balance Account (${new Date().toLocaleString()})`);
+        } else if (previousData.userBalance && userData.userBalance < previousData.userBalance) {
+          const withdrawalAmount = previousData.userBalance - userData.userBalance;
+          sendNotification(notificationsRef, `You withdrew ₦${withdrawalAmount} from your Balance (${new Date().toLocaleString()})`);
+        }
+
+        // Check for new referrals
+        if (userData.referralCount > (previousData.referralCount || 0)) {
+          fetchReferralName(userData.referralBy, (referralName) => {
+            sendNotification(notificationsRef, `You have a new registration referral: ${referralName} (${new Date().toLocaleString()})`);
+          });
+        }
+
+        // Update previousData
+        previousData = { ...userData };
+      }
+    });
+
+    // Function to send notifications
+    function sendNotification(notificationsRef, message) {
+      const newNotificationKey = `notif_${Date.now()}`;
+      const newNotificationRef = child(notificationsRef, newNotificationKey);
+      set(newNotificationRef, { message }).catch((error) => {
+        console.error("Failed to send notification:", error);
+      });
+    }
+
+// Function to fetch referral user name
+function fetchReferralName(referralById, callback) {
+  const referralUserRef = ref(db, `users/${referralById}`);
+  
+  // Amfani da get daga firebase/database
+  get(referralUserRef).then((snapshot) => {
+    if (snapshot.exists()) {
+      const referralUserData = snapshot.val();
+      callback(referralUserData.fullName || "New User");
+    } else {
+      callback("New User");
+    }
+  }).catch((error) => {
+    console.error("Failed to fetch referral name:", error);
+    callback("New User");
+  });
+}
+}
+});
 </script>
 </body>
 </html>
