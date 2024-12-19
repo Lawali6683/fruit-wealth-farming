@@ -162,6 +162,8 @@ p {
         <p>Invest now and earn up to ₦500 daily income!</p>
         <p>Deposit Now and clear your Welcome bunos ₦500 </p> 
         <p>You can withdraw your Welcome bonus Now</p>
+        <p>Welcome <span id="userfullName"></span>👋</p>
+        
     </header>
 
     <main class="products-container">
@@ -291,8 +293,8 @@ p {
     </footer>
     
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
 // Firebase configuration
@@ -312,48 +314,63 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// Handle investments after verifying user is logged in
+// DOM element for user's full name
+const userFullNameElement = document.getElementById('userfullName');
+
+// Check authentication state
 onAuthStateChanged(auth, (user) => {
     if (user) {
         const userId = user.uid;
+        const userRef = ref(db, `users/${userId}`);
+
+        // Fetch user's fullName and display it
+        get(child(userRef, 'fullName'))
+            .then(snapshot => {
+                if (snapshot.exists()) {
+                    const fullName = snapshot.val();
+                    userFullNameElement.textContent = fullName; // Update the DOM element
+                } else {
+                    userFullNameElement.textContent = "Guest";
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching user fullName:", error);
+                userFullNameElement.textContent = "Error";
+            });
+
+        // Handle investment button clicks
         document.querySelectorAll('.invest-btn').forEach(button => {
             button.addEventListener('click', async (e) => {
                 const productCard = e.target.closest('.product-card');
                 const product = productCard.dataset.product;
                 const price = productCard.dataset.price;
 
-                const userRef = ref(db, `users/${userId}`);
-
-                // Fetch user data
                 try {
-                    const snapshot = await get(child(userRef, 'accountNumber'));
+                    const snapshot = await get(child(userRef, 'fullName'));
+
                     if (snapshot.exists()) {
-                        const { accountNumber, bankName, fullName } = snapshot.val();
+                        const fullName = snapshot.val();
+                        
+                        const message = `${fullName}, you have selected ${product}. Open your profile and copy your Account Number. Deposit ₦${price} into your Invest Account Balance.`;
+                        alert(message);
 
-                        alert(`Congratulations! You have selected ${product}.
-Account: ${accountNumber} (Copy)
-Bank: ${bankName}
-Full Name: ${fullName}
-Deposit: ₦${price} in your FWF bank account.`);
-
-                        // Set user's investment level in the database
-                        await set(ref(db, `users/${userId}/level`), `level-${product}`);
+                        // Redirect user to profile.html
+                        window.location.href = 'profile.html';
                     } else {
-                        alert("Please Generating.. your Fruit Wealth Farming (FWF) Account Number  before Deposit.");
+                                alert("Please complete your profile details before proceeding.");
                         window.location.href = 'profile.html';
                     }
                 } catch (error) {
-                    console.error("Error fetching user data:", error);
+                    console.error("Error processing investment:", error);
                     alert("An error occurred. Please try again later.");
                 }
             });
         });
     } else {
+        userFullNameElement.textContent = "Guest";
         alert("Please log in to invest.");
     }
 });
-
-    </script>
+</script>
 </body>
-
 </html>
