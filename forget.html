@@ -14,39 +14,40 @@
 
     body {
       font-family: Arial, sans-serif;
-      background-color: #bfffbf;
+      background-color: black;
       color: #333;
     }
 
     header {
-      background-color: black;
+      background-color: #4CAF50;
       padding: 10px 0;
       text-align: center;
     }
 
     nav ul {
       list-style-type: none;
-      text-align: center;
+      display: flex;
+      justify-content: center;
     }
 
     nav ul li {
-      display: inline;
-      margin-right: 20px;
+      margin: 0 15px;
     }
 
     nav ul li a {
       color: white;
       text-decoration: none;
+      font-weight: bold;
     }
 
     .container {
       margin: 50px auto;
-      width: 80%;
+      width: 90%;
       max-width: 400px;
       background: white;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
       text-align: center;
     }
 
@@ -55,21 +56,18 @@
       color: #333;
     }
 
-    .container form {
-      display: flex;
-      flex-direction: column;
-    }
-
     .container form input {
+      width: 100%;
       padding: 10px;
       margin-bottom: 15px;
-      border: 1px solid #50ff00;
+      border: 1px solid #ddd;
       border-radius: 5px;
     }
 
     .container form button {
+      width: 100%;
       padding: 10px;
-      background-color: #70ff15;
+      background-color: #4CAF50;
       color: white;
       border: none;
       border-radius: 5px;
@@ -77,19 +75,31 @@
     }
 
     .container form button:hover {
-      background-color: #3115ff;
+      background-color: #45a049;
     }
 
-    #message {
-      color: red;
-      margin-top: 10px;
+    .loadingScreen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loadingScreen img {
+      width: 80px;
     }
 
     footer {
       text-align: center;
       margin-top: 20px;
-      font-size: 14px;
-      color: #777;
+      font-size: 15px;
+      color: white;
     }
   </style>
 </head>
@@ -104,7 +114,7 @@
   </header>
 
   <section class="container">
-    <h2>Forgot  Password?</h2>
+    <h2>Forgot Password?</h2>
     <p>Enter your email address below, and we'll send you a password reset link.</p>
     <form id="forgotForm">
       <input type="email" id="forgotEmail" placeholder="Enter your email address" required>
@@ -112,92 +122,78 @@
     </form>
     <div id="message"></div>
   </section>
-<style>
-    #email-icon {
-            position: fixed;
-            bottom: 20px;
-            right: 2px;
-            width: 70px;
-            height: 70px;
-            Top: 220px;
-            
-            border-radius: 50%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
 
-        #email-icon:hover {
-            transform: scale(1.1);
-        }
+  <div class="loadingScreen" id="loadingScreen">
+    <img src="lod.png" alt="Loading...">
+  </div>
 
-        #email-icon img {
-            width: 70px;
-            height: 70px;
-            Border-radius: 50%;
-        }
-</style>
-
-<div id="email-icon">
-    <img src="sup.png" alt="Support Icon">
-</div>
-
-<script>
-    document.getElementById('email-icon').addEventListener('click', function () {
-        const email = 'fruitwealthfarming@gmail.com';
-        const subject = encodeURIComponent("Customer Inquiry from Fruit Wealth Farming Invest");
-        const body = encodeURIComponent("Dear Fruit Wealth Farming,\n\nI have questions regarding your services. Please assist.\n\nThank you.");
-        const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
-        window.location.href = mailtoUrl;
-    });
-</script>
   <footer>
-    <p>&copy; fruit Wealth Farming </p>
+    <p>&copy; 2024 Fruit Wealth Farming</p>
   </footer>
 
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-  import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-  // Sabon Firebase Configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
-    authDomain: "fruit-wealth-farming.firebaseapp.com",
-    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com/",
-    projectId: "fruit-wealth-farming",
-    storageBucket: "fruit-wealth-farming.firebasestorage.app",
-    messagingSenderId: "417203511096",
-    appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
-    measurementId: "G-BZFLHB4KM2"
-  };
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+      authDomain: "fruit-wealth-farming.firebaseapp.com",
+      databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com/",
+      projectId: "fruit-wealth-farming",
+      storageBucket: "fruit-wealth-farming.firebasestorage.app",
+      messagingSenderId: "417203511096",
+      appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+      measurementId: "G-BZFLHB4KM2"
+    };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
 
-  // Handle Forgot Password Form
-  document.getElementById('forgotForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const email = document.getElementById('forgotEmail').value;
-    const messageDiv = document.getElementById('message');
+    const forgotForm = document.getElementById('forgotForm');
+    const loadingScreen = document.getElementById('loadingScreen');
 
-    sendPasswordResetEmail(auth, email)
-      .then(() => {
-        messageDiv.style.color = 'green';
-        messageDiv.textContent = 'A reset password link has been sent to your email address.';
-      })
-      .catch((error) => {
-        if (error.code === 'auth/user-not-found') {
-          messageDiv.textContent = 'This email address is not registered for Fruit Wealth Farming.';
+    forgotForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value;
+
+      // Show loading screen
+      loadingScreen.style.display = 'flex';
+
+      // Check if email exists in Firebase
+      const dbRef = ref(database);
+      get(child(dbRef, `users`)).then((snapshot) => {
+        if (snapshot.exists()) {
+          const users = snapshot.val();
+          const emailExists = Object.values(users).some((user) => user.email === email);
+
+          if (emailExists) {
+            // Send password reset email
+            sendPasswordResetEmail(auth, email)
+              .then(() => {
+                loadingScreen.style.display = 'none';
+                alert('A password reset link has been sent to your email address. Please check your Email after 2 minutes.');
+              })
+              .catch((error) => {
+                loadingScreen.style.display = 'none';
+                alert(`Error: ${error.message}`);
+              });
+          } else {
+            loadingScreen.style.display = 'none';
+            alert('This email address is not registered in FWF Company.');
+          }
         } else {
-          messageDiv.textContent = `Error: ${error.message}`;
+          loadingScreen.style.display = 'none';
+          alert('No user data found.');
         }
+      }).catch((error) => {
+        loadingScreen.style.display = 'none';
+        alert(`Error fetching data: ${error.message}`);
       });
-  });
-</script>
+    });
+  </script>
 </body>
 </html>
