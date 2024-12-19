@@ -1,111 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Password</title>
-    <style>
-        /* Styles na zamani */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #2beaff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            max-width: 300px;
-            width: 80%;
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h2 {
-            color: #333;
-        }
-        input[type="password"] {
-            width: 90%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #9bff6a;
-            border-radius: 5px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #message {
-            margin-top: 15px;
-            font-size: 14px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Password & PIN</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: black;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 400px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #6a1b9a;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #6a1b9a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #4a148c;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: white;
+    }
+    header {
+      background-color: #4CAF50;
+      padding: 10px 0;
+      text-align: center;
+      Font-size: 11px;
+      Font-weight: bold;
+      Color: blue;
+    }
+    P{
+        Font-size: 16px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Update Password</h2>
-        <form id="updatePasswordForm">
-            <input type="password" id="newPassword" placeholder="Enter New Password" required>
-            <button type="submit">Update Password</button>
-            <p id="message"></p>
-        </form>
-    </div>
+  <header>
+    <h1>Reset Password & PIN</h1>
+    <p>Securely update your password or PIN, and once done, log in to confirm the changes. If you encounter any issues, please contact FWF Support for assistance.</p>
+  </header>
+  
+  <div class="container">
+    <h2>Reset Your New Password</h2>
+    <input type="password" id="newPassword" placeholder="New Password" />
+    <input type="password" id="confirmPassword" placeholder="Confirm Password" />
+    <button id="resetPasswordButton">Submit</button>
+  </div>
 
-    <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-  import { getAuth, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  <div class="container">
+    <h2>Update Your Transfer PIN</h2>
+    <input type="password" id="newPin" placeholder="New 5-Digit PIN" maxlength="5" />
+    <input type="password" id="confirmPin" placeholder="Confirm 5-Digit PIN" maxlength="5" />
+    <button id="updatePinButton">Submit</button>
+  </div>
 
-  // Sabon Firebase Configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
-    authDomain: "fruit-wealth-farming.firebaseapp.com",
-    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com/",
-    projectId: "fruit-wealth-farming",
-    storageBucket: "fruit-wealth-farming.firebasestorage.app",
-    messagingSenderId: "417203511096",
-    appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
-    measurementId: "G-BZFLHB4KM2"
-  };
+  <div>
+    <button onclick="window.location.href='login.html'">Go to Login</button>
+  </div>
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  <footer>
+    <p>&copy; 2024 Fruit Wealth Farming</p>
+  </footer>
 
-  // Handle Password Reset Form
-  document.getElementById('updatePasswordForm').addEventListener('submit', async function(event) {
-    event.preventDefault();
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-    const newPassword = document.getElementById('newPassword').value;
-    const message = document.getElementById('message');
-    const oobCode = new URLSearchParams(window.location.search).get('oobCode');
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+      authDomain: "fruit-wealth-farming.firebaseapp.com",
+      databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
+      projectId: "fruit-wealth-farming",
+      storageBucket: "fruit-wealth-farming.appspot.com",
+      messagingSenderId: "417203511096",
+      appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+      measurementId: "G-BZFLHB4KM2"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
 
-    try {
-      await confirmPasswordReset(auth, oobCode, newPassword);
-      message.textContent = "Your new password has been successfully updated!";
-      message.style.color = "green";
-
-      // Jira na seconds 2 kafin ya kai user zuwa login page
-      setTimeout(() => {
-        window.location.href = "login.html";
-      }, 2000);
-
-    } catch (error) {
-      message.textContent = "Failed to update password. Try again.";
-      message.style.color = "red";
+    // Get oobCode from localStorage
+    const oobCode = localStorage.getItem("oobCode");
+    if (!oobCode) {
+      alert("Verification code not found. Please try resetting your password again.");
+      window.location.href = "forget.html";
     }
-  });
-</script>
+
+    // Reset Password
+    document.getElementById("resetPasswordButton").addEventListener("click", async () => {
+      const newPassword = document.getElementById("newPassword").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      if (!newPassword || !confirmPassword) {
+        alert("Both fields are required.");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      try {
+        await verifyPasswordResetCode(auth, oobCode); // Verify the oobCode
+        await confirmPasswordReset(auth, oobCode, newPassword); // Confirm password reset
+        alert("Password updated successfully. You can now log in.");
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+    });
+
+    // Update Transfer PIN
+    document.getElementById("updatePinButton").addEventListener("click", () => {
+      const newPin = document.getElementById("newPin").value;
+      const confirmPin = document.getElementById("confirmPin").value;
+
+      if (!newPin || !confirmPin) {
+        alert("Both fields are required.");
+        return;
+      }
+
+      if (newPin !== confirmPin) {
+        alert("PINs do not match.");
+        return;
+      }
+
+      if (!/^\d{5}$/.test(newPin)) {
+        alert("PIN must be exactly 5 digits.");
+        return;
+      }
+
+      const userId = "user123"; // Replace with dynamic userId
+      const transferRef = ref(database, `users/${userId}`);
+
+      update(transferRef, { transferP: newPin })
+        .then(() => {
+          alert("Transfer PIN updated successfully.");
+        })
+        .catch((error) => {
+          alert(`Error: ${error.message}`);
+        });
+    });
+    
+  </script>
 </body>
 </html>
