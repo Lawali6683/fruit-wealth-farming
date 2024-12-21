@@ -44,7 +44,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, applyActionCode } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getDatabase, ref, update, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
@@ -69,48 +69,14 @@
       // Apply action code to verify email
       applyActionCode(auth, oobCode)
         .then(() => {
-          
-          const userId = auth.currentUser?.uid;
+          document.querySelector('.container').innerHTML = `
+            <h1 class="success">Success!</h1>
+            <p>Your email has been successfully verified. You will be redirected to the login page shortly.</p>`;
 
-          if (userId) {
-            const userRef = ref(database, `users/${userId}`);
-           
-            get(child(ref(database), `users/${userId}`))
-              .then((snapshot) => {
-                if (snapshot.exists()) {
-                  update(userRef, { verified: true })
-                    .then(() => {
-                      document.querySelector('.container').innerHTML = `
-                        <h1 class="success">Success!</h1>
-                        <p>Congratulations Your email has been verified successfully login Now.</p>
-                        <p>Redirecting to login...</p>`;
-                      setTimeout(() => {
-                        window.location.href = '/login.html';
-                      }, 300); 
-                    })
-                    .catch((error) => {
-                      console.error('Database update error:', error.message);
-                      document.querySelector('.container').innerHTML = `
-                        <h1 class="error">Error! Expire link</h1>
-                        <p>Failed to update verification status: ${error.message}</p>`;
-                    });
-                } else {
-                  document.querySelector('.container').innerHTML = `
-                    <h1 class="error">Error!</h1>
-                    <p>User data not found in the database.</p>`;
-                }
-              })
-              .catch((error) => {
-                console.error('Database read error:', error.message);
-                document.querySelector('.container').innerHTML = `
-                  <h1 class="error">Error!</h1>
-                  <p>Failed to fetch user data: ${error.message}</p>`;
-              });
-          } else {
-            document.querySelector('.container').innerHTML = `
-              <h1 class="error">Error!</h1>
-              <p>User not authenticated.</p>`;
-          }
+          // Redirect to login page
+          setTimeout(() => {
+            window.location.href = '/login.html';
+          }, 3000); // Wait for 3 seconds before redirect
         })
         .catch((error) => {
           // Handle errors
@@ -123,7 +89,7 @@
       // No oobCode found
       document.querySelector('.container').innerHTML = `
         <h1 class="error">Error!</h1>
-        <p>Invalid or missing verification Link Expire Link.</p>`;
+        <p>Invalid or missing verification link. It might have expired.</p>`;
     }
   </script>
 </body>
