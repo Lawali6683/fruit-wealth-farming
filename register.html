@@ -424,34 +424,24 @@ async function registerUser(referralCode) {
             registrationDate: new Date().toISOString(),            
             activeStatus: true
         });
+        
+    await sendEmailVerification(user);
 
-        await sendEmailVerification(user);
+    alert("Your registration was successful. Please verify your email...");
+    window.location.href = "whaitVerified.html"; // Redirect to the verification waiting page
 
-        alert("Your Register Sessefuly Verification your Information...");
-        window.location.href = "whaitVerified.html";
-
-        setTimeout(async () => {
-            await auth.currentUser.reload();
-            if (!auth.currentUser.emailVerified) {
-                await deleteUser(auth.currentUser);
-                await remove(ref(db, `users/${user.uid}`));
-                alert("Account deleted due to email verification timeout.");
-            }
-        }, 20 * 60 * 1000); // 20 minutes
-    } catch (error) {
-        if (error.code === "auth/email-already-in-use") {
-            alert("This email is already registered. Redirecting to login...");
-            window.location.href = "login.html";
-        } else {
-            console.error("Registration error:", error);
-            alert("Error: " + error.message);
-        }
-    } finally {
-        document.getElementById("loadingScreen").style.display = "none";
+} catch (error) {
+    if (error.code === "auth/email-already-in-use") {
+        alert("This email is already registered. Redirecting to login...");
+        window.location.href = "login.html";
+    } else {
+        console.error("Registration error:", error);
+        alert("Error: " + error.message);
     }
+} finally {
+    document.getElementById("loadingScreen").style.display = "none";
 }
-
-
+}
 // Run referral code handling on load
 storeReferralCode();
 handleReferralCode();
