@@ -37,14 +37,19 @@ header {
 }
 
 .logo img {
-  height: 50px;
+width: 60px;
+  height: 60px;
+  box-shadow: 0 0 10px rgba(8, 0, 0, 0.7);
+  Border-radius: 50%;
 }
 
 .profile img {
-  height: 50px;
-  width: 50px;
+  height: 60px;
+  width: 60px;
   border-radius: 50%;
+  border: 3px solid #fff;
   cursor: pointer;
+  box-shadow: 0 0 10px rgba(8, 0, 0, 0.7);
 }
 
 /* Greeting */
@@ -355,11 +360,17 @@ width: 70px;
    .gk{
        width: 100%;
        height: 4%;
-       background: linear-gradient(135deg, #ff00d4, #ff007f);
+       background: linear-gradient(15deg, #dfffaaa0, #6affcba0, #ff007f);
        z-index: ;
         Border-radius: 40px;
         Top: 50%;
    }  
+  .pin{
+      width: 50px;
+      height: 50px;
+      box-shadow: 0 0 10px rgba(8, 0, 0, 0.7);
+      Border-radius: 50%;
+  }
 </style>      
 </head>
 <body>  
@@ -368,13 +379,14 @@ width: 70px;
   <img src="lod.png" alt="Loading..." style="width: 100%; ">
 </div>
 <div id="dashboard-content" style="display: none;">
-
-    
-  <!-- Header Section -->
+      
   <header>
     <div class="logo">
       <img src="fruit.png" alt="Logo">
     </div>
+    <a href="pin.html">
+  <img src="pin.png" class="pin" alt="Pin">
+</a>
     <div class="profile">
       <img id="avatar" src="avatar.png" alt="Profile Avatar">
       <input type="file" id="upload-avatar" style="display: none;">  
