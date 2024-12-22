@@ -451,158 +451,170 @@ main {
         <p>&copy; 2024 Fruit Wealth Farming. All Rights Reserved.</p>
     </footer>
     <script type="module">
-        // Firebase Setup
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    // Firebase Setup
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
-            authDomain: "fruit-wealth-farming.firebaseapp.com",
-            databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com/",
-            projectId: "fruit-wealth-farming",
-            storageBucket: "fruit-wealth-farming.firebasestorage.app",
-            messagingSenderId: "417203511096",
-            appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+        authDomain: "fruit-wealth-farming.firebaseapp.com",
+        databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com/",
+        projectId: "fruit-wealth-farming",
+        storageBucket: "fruit-wealth-farming.firebasestorage.app",
+        messagingSenderId: "417203511096",
+        appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const auth = getAuth();
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth();
 
-        // DOM Elements
-        const userFullNameEl = document.getElementById("userFullName");
-        const referralLinkEl = document.getElementById("referralLink");
-        const copyLinkBtn = document.getElementById("copyLinkBtn");
-        const copySuccessMessage = document.getElementById("copySuccessMessage");
-        const totalReferralsEl = document.getElementById("totalReferrals");
-        const referralTableEl = document.getElementById("referralTable");
-        const congratsSection = document.getElementById("congratulations");
+    // DOM Elements
+    const userFullNameEl = document.getElementById("userFullName");
+    const referralLinkEl = document.getElementById("referralLink");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const copySuccessMessage = document.getElementById("copySuccessMessage");
+    const totalReferralsEl = document.getElementById("totalReferrals");
+    const referralTableEl = document.getElementById("referralTable");
+    const congratsSection = document.getElementById("congratulations");
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const uid = user.uid;
-                const userRef = ref(database, `users/${uid}`);
-                
-                get(userRef).then(snapshot => {
-                    if (snapshot.exists()) {
-                        const userData = snapshot.val();
-                        displayUserData(userData, uid);
-                    }
-                });
-            }
-        });
-
-        async function displayUserData(userData, uid) {
-            const { fullName, referralCode, userBalance = 0 } = userData;
-
-            userFullNameEl.textContent = fullName;
-            referralLinkEl.value = `https://fruitwealthfarming.com?ref=${referralCode}`;
-
-            const eligibleReferrals = await fetchEligibleReferrals(referralCode);
-            totalReferralsEl.textContent = eligibleReferrals.length;
-
-            updateReferralTable(eligibleReferrals);
-
-            // Bonus Logic
-            calculateReferralBonus(eligibleReferrals.length, uid, userBalance);
-
-            // Recurring bonus for reaching 150 referrals
-            if (eligibleReferrals.length >= 150) {
-                congratsSection.style.display = "block";
-                startRecurringBonus(uid, userBalance);
-            }
-        }
-
-        async function fetchEligibleReferrals(referralCode) {
-            const usersRef = ref(database, "users");
-            const snapshot = await get(usersRef);
-            const referrals = [];
-
-            if (snapshot.exists()) {
-                const users = snapshot.val();
-                for (const key in users) {
-                    const user = users[key];
-                    if (user.referralBy === referralCode && user.tsohonUser === "yes") {
-                        referrals.push({
-                            fullName: user.fullName || "N/A",
-                            investment: user.investment || 0
-                        });
-                    }
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            const uid = user.uid;
+            const userRef = ref(database, `users/${uid}`);
+            
+            get(userRef).then(snapshot => {
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    displayUserData(userData, uid);
                 }
-            }
-
-            return referrals;
-        }
-
-        function updateReferralTable(referrals) {
-            referralTableEl.innerHTML = ""; // Clear table
-            referrals.forEach(ref => {
-                referralTableEl.innerHTML += `
-                    <tr>
-                        <td>${ref.fullName}</td>
-                        <td>₦${ref.investment}</td>
-                    </tr>
-                `;
             });
-        }
-
-        function calculateReferralBonus(referralCount, uid, currentBalance) {
-            let bonus = 0;
-            if (referralCount >= 150) bonus = 40000;
-            else if (referralCount >= 100) bonus = 22000;
-            else if (referralCount >= 70) bonus = 18000;
-            else if (referralCount >= 30) bonus = 15000;
-            else if (referralCount >= 15) bonus = 10000;
-
-            if (bonus > 0) {
-                update(ref(database, `users/${uid}`), {
-                    userBalance: currentBalance + bonus
-                });
-            }
-        }
-
-        function startRecurringBonus(uid, currentBalance) {
-    const userRef = ref(database, `users/${uid}`);
-
-    // Karanta bayanan user
-    get(userRef).then((snapshot) => {
-        if (snapshot.exists()) {
-            const userData = snapshot.val();
-            let recurringCount = userData.recurringBonusCount || 0;
-
-            // Idan count bai wuce 12 ba, sai a ci gaba
-            if (recurringCount < 12) {
-                const newBalance = currentBalance + 20000;
-                const newCount = recurringCount + 1;
-
-                // Sabunta user balance da bonus count
-                update(userRef, {
-                    userBalance: newBalance,
-                    recurringBonusCount: newCount,
-                });
-
-                console.log(`₦20,000 bonus added. Count: ${newCount}/12`);
-            } else {
-                console.log("Recurring bonus limit reached (12 months).");
-            }
         }
     });
 
-    // Kira wannan function duk bayan kwana 30
-    setInterval(() => {
-        startRecurringBonus(uid, currentBalance);
-    }, 2592000000); // 30 days in milliseconds
+    async function displayUserData(userData, uid) {
+        const { fullName, referralLink, userBalance = 0, referralCode } = userData;
+        
+        if (referralLink) {
+    referralLinkEl.value = referralLink;
+} else {
+    referralLinkEl.value = "Referral link not available."; 
 }
-               
-        // Copy Referral Link
+
+      // Copy Referral Link
         copyLinkBtn.addEventListener("click", () => {
             referralLinkEl.select();
             document.execCommand("copy");
             copySuccessMessage.style.display = "block";
             setTimeout(() => copySuccessMessage.style.display = "none", 3000);
         });
-    </script>
+        
+        // Display user full name
+        userFullNameEl.textContent = fullName;
+
+       
+
+        // Fetch and display eligible referrals
+        const eligibleReferrals = await fetchEligibleReferrals(referralCode);
+        totalReferralsEl.textContent = eligibleReferrals.length;
+        updateReferralTable(eligibleReferrals);
+
+        // Bonus Logic
+        calculateReferralBonus(eligibleReferrals.length, uid, userBalance);
+
+        // Recurring bonus for reaching 150 referrals
+        if (eligibleReferrals.length >= 150) {
+            congratsSection.style.display = "block";
+            startRecurringBonus(uid, userBalance);
+        }
+    }
+
+    async function fetchEligibleReferrals(referralCode) {
+        const usersRef = ref(database, "users");
+        const snapshot = await get(usersRef);
+        const referrals = [];
+
+        if (snapshot.exists()) {
+            const users = snapshot.val();
+            for (const key in users) {
+                const user = users[key];
+                if (user.referralBy === referralCode && user.tsohonUser === "yes") {
+                    referrals.push({
+                        fullName: user.fullName || "N/A",
+                        investment: user.investment || 0
+                    });
+                }
+            }
+        }
+
+        return referrals;
+    }
+
+    function updateReferralTable(referrals) {
+        referralTableEl.innerHTML = ""; // Clear table
+        referrals.forEach(ref => {
+            referralTableEl.innerHTML += `
+                <tr>
+                    <td>${ref.fullName}</td>
+                    <td>₦${ref.investment}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function calculateReferralBonus(referralCount, uid, currentBalance) {
+        let bonus = 0;
+        if (referralCount >= 150) bonus = 40000;
+        else if (referralCount >= 100) bonus = 22000;
+        else if (referralCount >= 70) bonus = 18000;
+        else if (referralCount >= 30) bonus = 15000;
+        else if (referralCount >= 15) bonus = 10000;
+
+        if (bonus > 0) {
+            update(ref(database, `users/${uid}`), {
+                userBalance: currentBalance + bonus
+            });
+        }
+    }
+
+    function startRecurringBonus(uid, currentBalance) {
+        const userRef = ref(database, `users/${uid}`);
+
+        get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                let recurringCount = userData.recurringBonusCount || 0;
+
+                if (recurringCount < 12) {
+                    const newBalance = currentBalance + 20000;
+                    const newCount = recurringCount + 1;
+
+                    update(userRef, {
+                        userBalance: newBalance,
+                        recurringBonusCount: newCount,
+                    });
+
+                    console.log(`₦20,000 bonus added. Count: ${newCount}/12`);
+                } else {
+                    console.log("Recurring bonus limit reached (12 months).");
+                }
+            }
+        });
+
+        setTimeout(() => {
+            startRecurringBonus(uid, currentBalance);
+        }, 2592000000); 
+    }
+
+    // Copy Referral Link
+    copyLinkBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(referralLinkEl.textContent).then(() => {
+            copySuccessMessage.style.display = "block";
+            setTimeout(() => copySuccessMessage.style.display = "none", 3000);
+        });
+    });
+</script>
 
 </body>
 </html>
