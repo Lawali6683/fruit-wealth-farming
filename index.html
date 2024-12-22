@@ -11,7 +11,7 @@
     <meta property="og:url" content="https://fruit-wealth-farming.vercel.app/" />  
     <link rel="icon" href="fruit.png" type="image/png">
     <link rel="manifest" href="/manifest.json">
-
+ <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
     body {
   font-family: 'Arial', sans-serif;
@@ -82,7 +82,7 @@
         }
 
         .nav.active {
-            display: flex;
+            display: flex
         }
 
         .nav ul {
@@ -91,18 +91,22 @@
         }
 
         .nav ul li {
-            text-align: center;
-            padding: 10px 20px;
+                        padding: 0px 0px;
         }
 
         .nav ul li a {
             text-decoration: none;
             color: white;
-            font-size: 18px;
+            
+            margin: 0;
+            
+            gap: 1px;
+            
         }
 
         .nav ul li:hover {
-            background-color: #555;
+            background-color: black;
+            
         }
 
         
@@ -308,7 +312,7 @@ button::before {
 
 /* Menu */
 .menu {
-    display: block; /* Menu will always show initially */
+    display: block; 
 }
 
 .menu ul {
@@ -659,7 +663,8 @@ h3:hover {
             height: 70px;
             Border-radius: 50%;
         }
-                  
+           
+              
     </style>
     
 </head>
@@ -702,10 +707,11 @@ h3:hover {
         </style>
         <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
         <nav class="nav">
-            <ul>
-                <li><a href="contact.html">Contact</a></li>
-                <li><a href="register.html">Register</a></li>
-                <li><a href="login.html">Login</a></li>
+        <ul>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li><a href="register.html"><i class="fas fa-user-plus"></i> Register</a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+            <li><a href="howuse.html"><i class="fas fa-info-circle"></i> How Using FWF App</a></li>
             </ul>
         </nav>
     </header>
