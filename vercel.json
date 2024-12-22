@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/server.js",
+      "destination": "/api/server.js"
+    },
+    {
       "source": "/referral",
       "destination": "/"
     },
