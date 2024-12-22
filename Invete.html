@@ -502,13 +502,7 @@ main {
     referralLinkEl.value = "Referral link not available."; 
 }
 
-      // Copy Referral Link
-        copyLinkBtn.addEventListener("click", () => {
-            referralLinkEl.select();
-            document.execCommand("copy");
-            copySuccessMessage.style.display = "block";
-            setTimeout(() => copySuccessMessage.style.display = "none", 3000);
-        });
+     
         
         // Display user full name
         userFullNameEl.textContent = fullName;
@@ -606,15 +600,16 @@ main {
             startRecurringBonus(uid, currentBalance);
         }, 2592000000); 
     }
-
-    // Copy Referral Link
     copyLinkBtn.addEventListener("click", () => {
-        navigator.clipboard.writeText(referralLinkEl.textContent).then(() => {
-            copySuccessMessage.style.display = "block";
-            setTimeout(() => copySuccessMessage.style.display = "none", 3000);
-        });
+    navigator.clipboard.writeText(referralLinkEl.value).then(() => {
+        copySuccessMessage.style.display = "block";
+        setTimeout(() => copySuccessMessage.style.display = "none", 3000);
+    }).catch(err => {
+        console.error("Failed to copy link:", err);
+        alert("An error occurred while copying the link. Please try again.");
     });
-</script>
+});
 
+</script>
 </body>
 </html>
