@@ -272,13 +272,19 @@
         appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
         measurementId: "G-BZFLHB4KM2"
     };
-
-    const PAYSTACK_SECRET_KEY = import.meta.env.VITE_PAYSTACK_SECRET_KEY;
-
+      
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+
+const PAYSTACK_SECRET_KEY = import.meta.env.VITE_PAYSTACK_SECRET_KEY;
+
+if (!PAYSTACK_SECRET_KEY) {
+  console.error("PAYSTACK_SECRET_KEY is not defined! Check environment settings.");
+} else {
+  console.log("PAYSTACK_SECRET_KEY loaded:", PAYSTACK_SECRET_KEY);
+}
 
     // Show or hide loading screen
     function showLoading(show) {
