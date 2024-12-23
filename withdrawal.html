@@ -179,7 +179,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Withdrawal history will appear here -->
+               
             </tbody>
         </table>
     </div>
@@ -262,6 +262,13 @@ const auth = getAuth();
 const database = getDatabase();
 
 const PAYSTACK_SECRET_KEY = import.meta.env.VITE_PAYSTACK_SECRET_KEY;
+
+if (!PAYSTACK_SECRET_KEY) {
+  console.error("PAYSTACK_SECRET_KEY is not defined! Check environment settings.");
+} else {
+  console.log("PAYSTACK_SECRET_KEY loaded:", PAYSTACK_SECRET_KEY);
+}
+
 
 // DOM Elements
 const withdrawForm = document.getElementById("withdrawForm");
