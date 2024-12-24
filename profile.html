@@ -278,13 +278,14 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-const PAYSTACK_SECRET_KEY = process.env.VITE_PAYSTACK_SECRET_KEY;
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
 if (!PAYSTACK_SECRET_KEY) {
   console.error("PAYSTACK_SECRET_KEY is not defined!");
 } else {
   console.log("Loaded Paystack key:", PAYSTACK_SECRET_KEY);
 }
+
 
     // Show or hide loading screen
     function showLoading(show) {
