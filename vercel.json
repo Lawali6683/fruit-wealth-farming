@@ -14,6 +14,6 @@
     }
   ],
   "env": {
-    "PAYSTACK_SECRET_KEY": "@paystack-secret-key" 
+    "PAYSTACK_SECRET_KEY": "PAYSTACK_SECRET_KEY" 
   }
 }
