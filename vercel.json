@@ -14,9 +14,6 @@
     }
   ],
   "env": {
-  "PAYSTACK_SECRET_KEY": "paystack-secret-key",
-  "FIREBASE_ADMIN_SDK": "firebase-admin-sdk", 
-  "VITE_PAYSTACK_SECRET_KEY": "vite-paystack-secret-key"
+    "PAYSTACK_SECRET_KEY": "@paystack-secret-key" 
   }
 }
- 
