@@ -255,8 +255,9 @@
     });
 </script>
 </div>
-  </div>    
-  <script type="module">
+  </div>
+      
+   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -270,22 +271,30 @@
         storageBucket: "fruit-wealth-farming.appspot.com",
         messagingSenderId: "417203511096",
         appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
-        measurementId: "G-BZFLHB4KM2"
+        measurementId: "G-BZFLHB4KM2",
     };
-      
+
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-
-if (!PAYSTACK_SECRET_KEY) {
-  console.error("PAYSTACK_SECRET_KEY is not defined!");
-} else {
-  console.log("Loaded Paystack key:", PAYSTACK_SECRET_KEY);
-}
-
+    // Fetch Paystack Secret Key
+    async function getPaystackKey() {
+        try {
+            const response = await fetch("/api/get-paystack-secret-key");
+            const data = await response.json();
+            if (data.success) {
+                return data.key;
+            } else {
+                throw new Error(data.message || "Unable to fetch Paystack key.");
+            }
+        } catch (error) {
+            console.error("Error fetching Paystack key:", error);
+            alert("Error fetching Paystack key. Please try again later.");
+            return null;
+        }
+    }
 
     // Show or hide loading screen
     function showLoading(show) {
@@ -339,6 +348,9 @@ if (!PAYSTACK_SECRET_KEY) {
 
     // Create a customer in Paystack
     async function createCustomer(fullName, email, phoneNumber) {
+        const PAYSTACK_SECRET_KEY = await getPaystackKey();
+        if (!PAYSTACK_SECRET_KEY) return null;
+
         const [firstName, lastName] = fullName.split(" ");
         try {
             const response = await fetch("https://api.paystack.co/customer", {
@@ -373,56 +385,58 @@ if (!PAYSTACK_SECRET_KEY) {
     }
 
     // Create a virtual account for the user using Paystack
-    
     async function createVirtualAccount(userId, fullName, email, phoneNumber) {
-    try {
-        const userRef = ref(db, `users/${userId}`);
-        const snapshot = await new Promise((resolve) => onValue(userRef, resolve, { onlyOnce: true }));
-        const userData = snapshot.val();
+        const PAYSTACK_SECRET_KEY = await getPaystackKey();
+        if (!PAYSTACK_SECRET_KEY) return;
 
-        if (!userData.paystackCustomerId) {
-            console.error("Customer ID not found! Cannot create virtual account.");
-            return;
+        try {
+            const userRef = ref(db, `users/${userId}`);
+            const snapshot = await new Promise((resolve) => onValue(userRef, resolve, { onlyOnce: true }));
+            const userData = snapshot.val();
+
+            if (!userData.paystackCustomerId) {
+                console.error("Customer ID not found! Cannot create virtual account.");
+                return;
+            }
+
+            const response = await fetch("https://api.paystack.co/dedicated_account", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    customer: userData.paystackCustomerId,
+                    preferred_bank: "wema-bank",
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.status) {
+                const accountDetails = {
+                    accountNumber: data.data.account_number,
+                    bankName: data.data.bank.name,
+                    accountName: data.data.account_name,
+                };
+
+                // Save account details to the database
+                await set(ref(db, `users/${userId}/account`), accountDetails);
+                alert(`🎉 Congratulations ${fullName}! Your FWF Company Wema Bank account has been successfully created! Start depositing now! 🎉`);
+                displayUserData({ fullName, email, account: accountDetails });
+            } else {
+                console.error("Paystack Error:", data.message || "Unknown error");
+                alert("Error from Paystack: " + (data.message || "Unknown error"));
+            }
+        } catch (error) {
+            console.error("Error creating virtual account:", error);
+            alert("Network error while creating your FWF Wema Bank account. Please try again! Contact support if needed.");
         }
-
-        const response = await fetch("https://api.paystack.co/dedicated_account", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                customer: userData.paystackCustomerId,
-                preferred_bank: "wema-bank",
-            }),
-        });
-
-        const data = await response.json();
-
-        if (data.status) {
-            const accountDetails = {
-                accountNumber: data.data.account_number,
-                bankName: data.data.bank.name,
-                accountName: data.data.account_name,
-            };
-
-            // Ajiye bayanai a database
-            await set(ref(db, `users/${userId}/account`), accountDetails);
-            alert( `🎉 Congratulations ${fullName}! Your FWF Company Wema Bank account has been successfully created! Start depositing now! 🎉 `);
-            displayUserData({ fullName, email, account: accountDetails });
-        } else {
-            console.error("Paystack Error:", data.message || "Unknown error");
-            alert("Error from Paystack: " + (data.message || "Unknown error"));
-        }
-    } catch (error) {
-        console.error("Error creating virtual account:", error);
-        alert("Network error while creating your FWF Wema Bank account. Please try again! Contact support if needed.");
     }
-}
 
     // Display user data
     function displayUserData(userData) {
-                document.getElementById("fullName").innerText = userData.fullName || "User";
+        document.getElementById("fullName").innerText = userData.fullName || "User";
         document.getElementById("accountName").innerText = userData.fullName || "User";
         document.getElementById("email").innerText = userData.email || "example@example.com";
         document.getElementById("accountNumber").innerText = userData.account?.accountNumber || "N/A";
@@ -435,8 +449,8 @@ if (!PAYSTACK_SECRET_KEY) {
         navigator.clipboard.writeText(accountNumber).then(() => {
             alert("Account number copied successfully!");
         });
-    }                    
-                                                        
+    }
+
     // Show loading screen on page load
     document.addEventListener("DOMContentLoaded", () => {
         showLoading(true);
