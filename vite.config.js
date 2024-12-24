@@ -5,7 +5,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     define: {
-      'import.meta.env.VITE_PAYSTACK_SECRET_KEY': JSON.stringify(env.VITE_PAYSTACK_SECRET_KEY),
+      'import.meta.env.VITE_PAYSTACK_SECRET_KEY': env.VITE_PAYSTACK_SECRET_KEY,
     },
   };
 });
