@@ -1,19 +1,31 @@
 {
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/server.js",
-      "destination": "/api/server.js"
+      "src": "api/get-paystack-secret-key.js",
+      "use": "@vercel/node"
     },
     {
-      "source": "/referral",
-      "destination": "/"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "api/webhook.js",
+      "use": "@vercel/node"
     }
   ],
-  "env": {
-    "PAYSTACK_SECRET_KEY": "PAYSTACK_SECRET_KEY" 
-  }
+  "routes": [
+    {
+      "src": "/api/get-paystack-secret-key",
+      "dest": "/api/get-paystack-secret-key.js"
+    },
+    {
+      "src": "/api/webhook",
+      "dest": "/api/webhook.js"
+    },
+    {
+      "src": "/referral",
+      "dest": "/"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
