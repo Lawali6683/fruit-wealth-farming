@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Withdrawal Page</title>
-    <!-- Custom Styles -->
+    <title>Withdrawal Page</title>    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -88,7 +87,7 @@
         .history-table th, .history-table td {
             border: 1px solid #ddd;
             padding: 8px;
-            Font-size: 2px;
+            Font-size: 10px;
             
         }
 
@@ -239,7 +238,11 @@
 <footer>
         <p>&copy; Fruit Wealth Farming. All rights reserved.</p>
     </footer>
-   <script type="module">
+    
+    
+    
+    
+ <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -253,7 +256,7 @@ const firebaseConfig = {
     storageBucket: "fruit-wealth-farming.appspot.com",
     messagingSenderId: "417203511096",
     appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
-    measurementId: "G-BZFLHB4KM2"
+    measurementId: "G-BZFLHB4KM2",
 };
 
 // Initialize Firebase
@@ -261,26 +264,34 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const database = getDatabase();
 
-const PAYSTACK_SECRET_KEY = process.env.VITE_PAYSTACK_SECRET_KEY;
-
-if (!PAYSTACK_SECRET_KEY) {
-  console.error("PAYSTACK_SECRET_KEY is not defined!");
-} else {
-  console.log("Loaded Paystack key:", PAYSTACK_SECRET_KEY);
+// Fetch PAYSTACK_SECRET_KEY from server
+let PAYSTACK_SECRET_KEY = "";
+async function fetchPaystackKey() {
+    try {
+        const response = await fetch("/api/get-paystack-secret-key.js");
+        const data = await response.json();
+        PAYSTACK_SECRET_KEY = data.key;
+        if (!PAYSTACK_SECRET_KEY) {
+            throw new Error("Paystack key not retrieved!");
+        }
+        console.log("Paystack key loaded successfully.");
+    } catch (error) {
+        console.error("Error fetching Paystack key:", error);
+    }
 }
-
+await fetchPaystackKey();
 
 // DOM Elements
 const withdrawForm = document.getElementById("withdrawForm");
 const userFullName = document.getElementById("userFullName");
 const userBalanceElement = document.getElementById("userBalance");
 const loadingElement = document.getElementById("loading");
-const historyTable = document.getElementById("historyTable").querySelector('tbody');
+const historyTable = document.getElementById("historyTable").querySelector("tbody");
 const pinForm = document.getElementById("pinForm");
 const userPinInput = document.getElementById("userPin");
 
 // Global Variables
-let currentUserId;
+let currentUserId = null;
 let currentBalance = 0;
 
 // Authentication State Listener
@@ -290,7 +301,7 @@ onAuthStateChanged(auth, (user) => {
         loadUserData();
         loadWithdrawalHistory();
     } else {
-        alert("User not authenticated! Please login.");
+        alert("User not authenticated! Please log in.");
     }
 });
 
@@ -314,7 +325,7 @@ function loadWithdrawalHistory() {
         if (snapshot.exists()) {
             historyTable.innerHTML = "";
             const history = snapshot.val();
-            Object.values(history).forEach(entry => {
+            Object.values(history).forEach((entry) => {
                 const row = `<tr>
                     <td>₦${entry.amount}</td>
                     <td>${entry.bankName}</td>
@@ -361,7 +372,7 @@ withdrawForm.addEventListener("submit", async (e) => {
     try {
         // Verify Bank Account using Paystack
         const accountName = await verifyBankAccount(accountNumber, bankCode);
-        const bankName = getBankName(bankCode); // Get Bank Name
+        const bankName = getBankName(bankCode);
 
         // Confirm Transfer
         playAlertSound();
@@ -373,7 +384,8 @@ withdrawForm.addEventListener("submit", async (e) => {
             loadingElement.style.display = "none";
             return;
         }
-
+            
+                          
         // Show PIN Form for confirmation
         pinForm.style.display = "block";
         pinForm.addEventListener("submit", async (e) => {
@@ -406,7 +418,7 @@ withdrawForm.addEventListener("submit", async (e) => {
                     }
                 } else {
                     playAlertSound();
-                    alert("Error: No PIN found.");
+                    alert("pin not defined.");
                 }
             });
         });
@@ -420,24 +432,13 @@ withdrawForm.addEventListener("submit", async (e) => {
     }
 });
 
-
-
 // Verify Bank Account
 async function verifyBankAccount(accountNumber, bankCode) {
-    const response = await fetch("https://api.paystack.co/bank/resolve", {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            account_number: accountNumber,
-            bank_code: bankCode
-        })
+    const response = await fetch(`https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`, {
+        headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
     });
-
     const data = await response.json();
-    if (!data.status) throw new Error("Invalid account details.");
+    if (!data.status) throw new Error(data.message || "Invalid account details check an trying again.");
     return data.data.account_name;
 }
 
@@ -447,22 +448,20 @@ async function processTransfer(accountNumber, bankCode, amount, accountName) {
         method: "POST",
         headers: {
             Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({
             source: "balance",
-            reason: "Withdrawal",
             amount: Math.round(amount * 100), // Convert to kobo
             recipient: {
                 type: "nuban",
                 name: accountName,
                 account_number: accountNumber,
                 bank_code: bankCode,
-                currency: "NGN"
-            }
-        })
+                currency: "NGN",
+            },
+        }),
     });
-
     const data = await response.json();
     return data.status;
 }
@@ -472,21 +471,17 @@ function updateBalanceAndHistory(amount, accountName, accountNumber, bankCode) {
     const newBalance = currentBalance - amount;
     const userRef = ref(database, `users/${currentUserId}`);
 
-    update(userRef, {
-        userBalance: newBalance
-    });
+    update(userRef, { userBalance: newBalance });
 
-    // Add to history
     const historyRef = ref(database, `users/${currentUserId}/historyWithdrawal`);
     push(historyRef, {
         amount: amount.toFixed(2),
         bankName: getBankName(bankCode),
-        accountNumber: accountNumber,
-        accountName: accountName,
-        date: new Date().toLocaleString("en-NG")
+        accountNumber,
+        accountName,
+        date: new Date().toLocaleString(),
     });
 
-    // Update UI
     userBalanceElement.textContent = newBalance.toFixed(2);
     loadWithdrawalHistory();
 }
@@ -528,7 +523,7 @@ function getBankName(code) {
     "501": "FSDH Merchant Bank Limited",
     "50211": "Kuda Bank",
     "303": "Lotus Bank",
-    "125": "Rubies MFB"    
+    "125": "Rubies MFB"
     };
     return banks[code] || "Unknown Bank";
 }
