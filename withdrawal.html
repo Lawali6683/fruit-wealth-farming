@@ -261,12 +261,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const database = getDatabase();
 
-const PAYSTACK_SECRET_KEY = import.meta.env.VITE_PAYSTACK_SECRET_KEY;
+const PAYSTACK_SECRET_KEY = process.env.VITE_PAYSTACK_SECRET_KEY;
 
 if (!PAYSTACK_SECRET_KEY) {
-  console.error("PAYSTACK_SECRET_KEY is not defined! Check environment settings.");
+  console.error("PAYSTACK_SECRET_KEY is not defined!");
 } else {
-  console.log("PAYSTACK_SECRET_KEY loaded:", PAYSTACK_SECRET_KEY);
+  console.log("Loaded Paystack key:", PAYSTACK_SECRET_KEY);
 }
 
 
