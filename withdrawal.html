@@ -238,10 +238,7 @@
 <footer>
         <p>&copy; Fruit Wealth Farming. All rights reserved.</p>
     </footer>
-    
-    
-    
-    
+           
  <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
@@ -384,8 +381,7 @@ withdrawForm.addEventListener("submit", async (e) => {
             loadingElement.style.display = "none";
             return;
         }
-            
-                          
+
         // Show PIN Form for confirmation
         pinForm.style.display = "block";
         pinForm.addEventListener("submit", async (e) => {
@@ -418,7 +414,7 @@ withdrawForm.addEventListener("submit", async (e) => {
                     }
                 } else {
                     playAlertSound();
-                    alert("pin not defined.");
+                    alert("PIN not defined.");
                 }
             });
         });
@@ -438,7 +434,7 @@ async function verifyBankAccount(accountNumber, bankCode) {
         headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
     });
     const data = await response.json();
-    if (!data.status) throw new Error(data.message || "Invalid account details check an trying again.");
+    if (!data.status) throw new Error(data.message || "Invalid account details, check and try again.");
     return data.data.account_name;
 }
 
@@ -522,8 +518,8 @@ function getBankName(code) {
     "559": "Coronation Merchant Bank",
     "501": "FSDH Merchant Bank Limited",
     "50211": "Kuda Bank",
-    "303": "Lotus Bank",
-    "125": "Rubies MFB"
+        "303": "Lotus Bank",
+        "125": "Rubies MFB"
     };
     return banks[code] || "Unknown Bank";
 }
