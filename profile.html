@@ -279,7 +279,7 @@
     // Fetch Paystack Secret Key
     async function getPaystackKey() {
         try {
-            const response = await fetch("/api/get-paystack-secret-key");
+            const response = await fetch("/api/get-paystack-secret-key.js");
             const data = await response.json();
             if (data.success) {
                 return data.key;
