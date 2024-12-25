@@ -265,7 +265,7 @@ const database = getDatabase();
 let PAYSTACK_SECRET_KEY = "";
 async function fetchPaystackKey() {
     try {
-        const response = await fetch("/api/get-paystack-secret-key.js");
+        const response = await fetch("/api/get-paystack-secret-key");
         const data = await response.json();
         PAYSTACK_SECRET_KEY = data.key;
         if (!PAYSTACK_SECRET_KEY) {
