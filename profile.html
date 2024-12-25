@@ -254,10 +254,7 @@
         window.location.href = mailtoUrl;
     });
 </script>
-</div>
-  </div>
-      
-   <script type="module">
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -326,11 +323,17 @@
                             return;
                         }
                     }
-
-                    // Check if virtual account exists
+                    // Check if virtual account exists in Firebase or localStorage
                     if (!userData.account || !userData.account.accountNumber) {
                         console.log("Creating virtual account...");
-                        createVirtualAccount(user.uid, userData.fullName, userData.email, userData.phoneNumber);
+                        // Check if the virtual account exists in localStorage
+                        const storedAccount = localStorage.getItem(`virtualAccount_${user.uid}`);
+                        if (storedAccount) {
+                            const accountDetails = JSON.parse(storedAccount);
+                            displayUserData(userData, accountDetails);
+                        } else {
+                            createVirtualAccount(user.uid, userData.fullName, userData.email, userData.phoneNumber);
+                        }
                     } else {
                         displayUserData(userData);
                     }
@@ -420,13 +423,14 @@
                     accountName: data.data.account_name,
                 };
 
-                // Save account details to the database
+                // Save account details to the database and localStorage
                 await set(ref(db, `users/${userId}/account`), accountDetails);
+                localStorage.setItem(`virtualAccount_${userId}`, JSON.stringify(accountDetails));
                 alert(`🎉 Congratulations ${fullName}! Your FWF Company Wema Bank account has been successfully created! Start depositing now! 🎉`);
                 displayUserData({ fullName, email, account: accountDetails });
             } else {
                 console.error("Paystack Error:", data.message || "Unknown error");
-                alert("Error from Paystack: " + (data.message || "Unknown error"));
+                alert("Network issues: " + (data.message || "Unknown error"));
             }
         } catch (error) {
             console.error("Error creating virtual account:", error);
@@ -435,20 +439,12 @@
     }
 
     // Display user data
-    function displayUserData(userData) {
+    function displayUserData(userData, accountDetails) {
         document.getElementById("fullName").innerText = userData.fullName || "User";
         document.getElementById("accountName").innerText = userData.fullName || "User";
         document.getElementById("email").innerText = userData.email || "example@example.com";
-        document.getElementById("accountNumber").innerText = userData.account?.accountNumber || "N/A";
-        document.getElementById("bankName").innerText = userData.account?.bankName || "N/A";
-    }
-
-    // Copy account number to clipboard
-    function copyToClipboard() {
-        const accountNumber = document.getElementById("accountNumber").innerText;
-        navigator.clipboard.writeText(accountNumber).then(() => {
-            alert("Account number copied successfully!");
-        });
+        document.getElementById("accountNumber").innerText = accountDetails.accountNumber || "N/A";
+        document.getElementById("bankName").innerText = accountDetails.bankName || "N/A";
     }
 
     // Show loading screen on page load
