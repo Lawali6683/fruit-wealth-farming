@@ -1,14 +1,17 @@
 
-import { initializeApp } from 'firebase-admin/app';
 import admin from 'firebase-admin';
-import crypto from 'crypto';
-import fetch from 'node-fetch';
 
 if (!admin.apps.length) {
-  const firebaseAdminSDK = JSON.parse(process.env.FIREBASE_ADMIN_SDK);
+  const firebaseAdminSDK = process.env.FIREBASE_ADMIN_SDK;
+  if (!firebaseAdminSDK) {
+    throw new Error("FIREBASE_ADMIN_SDK environment variable is not set");
+  }
+
+  const parsedSDK = JSON.parse(firebaseAdminSDK);
+
   admin.initializeApp({
-    credential: admin.credential.cert(firebaseAdminSDK),
-    databaseURL: 'https://fruit-wealth-farming-default-rtdb.firebaseio.com',
+    credential: admin.credential.cert(parsedSDK),
+    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
   });
 }
 
