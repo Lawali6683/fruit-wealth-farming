@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import crypto from 'crypto';
 import fetch from 'node-fetch';
 
 // Initialize Firebase Admin SDK
@@ -12,6 +13,14 @@ if (!admin.apps.length) {
 
 const db = admin.database();
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+
+function validatePaystackSignature(req, signature) {
+  const hash = crypto
+    .createHmac('sha512', PAYSTACK_SECRET_KEY)
+    .update(JSON.stringify(req.body))
+    .digest('hex');
+  return hash === signature;
+}
 
 // Function to verify payment with Paystack
 async function verifyPayment(transactionReference) {
@@ -35,6 +44,12 @@ async function verifyPayment(transactionReference) {
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
+    const signature = req.headers['x-paystack-signature'];
+
+    if (!signature || !validatePaystackSignature(req, signature)) {
+      return res.status(400).send('Invalid signature.');
+    }
+
     const { event, data } = req.body;
 
     if (event === 'charge.success') {
@@ -77,42 +92,41 @@ export default async function handler(req, res) {
 
 // Helper Functions
 async function getUserUidByEmail(email) {
-  const usersRef = ref(db, 'users');
-  const usersSnapshot = await get(usersRef);
+  const usersRef = admin.database().ref('users');
+  const usersSnapshot = await usersRef.once('value');
   const usersData = usersSnapshot.val();
   for (let userId in usersData) {
     if (usersData[userId].email === email) {
       return userId;
     }
   }
-  return null; 
+  return null;
 }
 
 async function checkTransactionProcessed(userUid, transactionReference) {
-  const userRef = ref(db, `users/${userUid}/transactions`);
-  const userSnapshot = await get(userRef);
+  const userRef = admin.database().ref(`users/${userUid}/transactions`);
+  const userSnapshot = await userRef.once('value');
   const userData = userSnapshot.val();
-  return userData ? userData.includes(transactionReference) : false; 
+  return userData ? userData.includes(transactionReference) : false;
 }
 
 async function updateInvestment(userUid, investmentAmount, transactionReference) {
-  const userRef = ref(db, `users/${userUid}`);
-  const userSnapshot = await get(userRef);
+  const userRef = admin.database().ref(`users/${userUid}`);
+  const userSnapshot = await userRef.once('value');
   const userData = userSnapshot.val();
-  
+
   if (!userData) {
     throw new Error('User data not found');
   }
 
   const newInvestment = (userData.investment || 0) + investmentAmount;
 
-  const updatedTransactions = userData.transactions 
-    ? [...userData.transactions, transactionReference] 
-    : [transactionReference]; 
+  const updatedTransactions = userData.transactions
+    ? [...userData.transactions, transactionReference]
+    : [transactionReference];
 
-  await set(userRef, {
-    ...userData,
+  await userRef.update({
     investment: newInvestment,
-    transactions: updatedTransactions, 
+    transactions: updatedTransactions,
   });
 }
