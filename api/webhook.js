@@ -1,3 +1,5 @@
+
+import { initializeApp } from 'firebase-admin/app';
 import admin from 'firebase-admin';
 import crypto from 'crypto';
 import fetch from 'node-fetch';
