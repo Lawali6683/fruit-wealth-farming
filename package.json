@@ -1,0 +1,19 @@
+{
+  "name": "fruit-wealth-farming",
+  "version": "1.0.0",
+  "description": "A platform for wealth creation through fruit farming investments.",
+  "main": "index.js",
+  "scripts": {
+    "start": "next start",
+    "build": "next build",
+    "dev": "next dev"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.10.1",
+    "crypto": "^1.0.1",
+    "node-fetch": "^3.3.1"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
+}
