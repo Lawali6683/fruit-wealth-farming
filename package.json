@@ -9,7 +9,7 @@
     "dev": "next dev"
   },
   "dependencies": {
-    "firebase-admin": "^11.10.1",
+    "firebase-admin": "^9.8.0",
     "crypto": "^1.0.1",
     "node-fetch": "^3.3.1"
   },
