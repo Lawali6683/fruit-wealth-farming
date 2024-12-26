@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "rewrites": [
     {
       "source": "/referral",
@@ -8,5 +9,9 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "FIREBASE_ADMIN_SDK": "FIREBASE_ADMIN_SDK",
+    "PAYSTACK_SECRET_KEY": "FIREBASE_ADMIN_SDK"
+  }
 }
