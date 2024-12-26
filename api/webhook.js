@@ -2,7 +2,6 @@ import admin from 'firebase-admin';
 import crypto from 'crypto';
 import fetch from 'node-fetch';
 
-// Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   const firebaseAdminSDK = JSON.parse(process.env.FIREBASE_ADMIN_SDK);
   admin.initializeApp({
@@ -22,7 +21,6 @@ function validatePaystackSignature(req, signature) {
   return hash === signature;
 }
 
-// Function to verify payment with Paystack
 async function verifyPayment(transactionReference) {
   try {
     const response = await fetch(
@@ -35,6 +33,7 @@ async function verifyPayment(transactionReference) {
       }
     );
     const data = await response.json();
+    console.log('Verification Response:', data);
     return data.status && data.data.status === 'success' ? data.data : null;
   } catch (error) {
     console.error('Error verifying payment:', error.message);
@@ -44,9 +43,11 @@ async function verifyPayment(transactionReference) {
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const signature = req.headers['x-paystack-signature'];
+    console.log('Webhook Received:', req.body);
 
+    const signature = req.headers['x-paystack-signature'];
     if (!signature || !validatePaystackSignature(req, signature)) {
+      console.error('Invalid Signature');
       return res.status(400).send('Invalid signature.');
     }
 
@@ -66,16 +67,20 @@ export default async function handler(req, res) {
             );
 
             if (alreadyProcessed) {
+              console.warn('Transaction already processed:', data.reference);
               return res.status(400).send('Transaction already processed.');
             }
 
-            const investmentAmount = transactionDetails.amount / 100; // Convert kobo to Naira
+            const investmentAmount = transactionDetails.amount / 100;
             await updateInvestment(userUid, investmentAmount, transactionDetails.reference);
+            console.log('Investment updated successfully');
             return res.status(200).send('Payment verified and investment updated.');
           } else {
+            console.warn('User not found for email:', email);
             return res.status(400).send('User not found.');
           }
         } else {
+          console.error('Payment verification failed for reference:', data.reference);
           return res.status(400).send('Payment verification failed.');
         }
       } catch (error) {
@@ -83,6 +88,7 @@ export default async function handler(req, res) {
         return res.status(500).send('Internal Server Error.');
       }
     } else {
+      console.warn('Invalid event type:', event);
       return res.status(400).send('Invalid event.');
     }
   } else {
@@ -90,43 +96,56 @@ export default async function handler(req, res) {
   }
 }
 
-// Helper Functions
 async function getUserUidByEmail(email) {
-  const usersRef = admin.database().ref('users');
-  const usersSnapshot = await usersRef.once('value');
-  const usersData = usersSnapshot.val();
-  for (let userId in usersData) {
-    if (usersData[userId].email === email) {
-      return userId;
+  try {
+    const usersRef = admin.database().ref('users');
+    const usersSnapshot = await usersRef.once('value');
+    const usersData = usersSnapshot.val();
+    for (let userId in usersData) {
+      if (usersData[userId].email === email) {
+        return userId;
+      }
     }
+    return null;
+  } catch (error) {
+    console.error('Error fetching user UID:', error.message);
+    return null;
   }
-  return null;
 }
 
 async function checkTransactionProcessed(userUid, transactionReference) {
-  const userRef = admin.database().ref(`users/${userUid}/transactions`);
-  const userSnapshot = await userRef.once('value');
-  const userData = userSnapshot.val();
-  return userData ? userData.includes(transactionReference) : false;
+  try {
+    const userRef = admin.database().ref(`users/${userUid}/transactions`);
+    const userSnapshot = await userRef.once('value');
+    const userData = userSnapshot.val();
+    return userData ? userData.includes(transactionReference) : false;
+  } catch (error) {
+    console.error('Error checking transaction:', error.message);
+    return false;
+  }
 }
 
 async function updateInvestment(userUid, investmentAmount, transactionReference) {
-  const userRef = admin.database().ref(`users/${userUid}`);
-  const userSnapshot = await userRef.once('value');
-  const userData = userSnapshot.val();
+  try {
+    const userRef = admin.database().ref(`users/${userUid}`);
+    const userSnapshot = await userRef.once('value');
+    const userData = userSnapshot.val();
 
-  if (!userData) {
-    throw new Error('User data not found');
+    if (!userData) {
+      throw new Error('User data not found');
+    }
+
+    const newInvestment = (userData.investment || 0) + investmentAmount;
+    const updatedTransactions = userData.transactions
+      ? [...userData.transactions, transactionReference]
+      : [transactionReference];
+
+    await userRef.update({
+      investment: newInvestment,
+      transactions: updatedTransactions,
+    });
+  } catch (error) {
+    console.error('Error updating investment:', error.message);
+    throw error;
   }
-
-  const newInvestment = (userData.investment || 0) + investmentAmount;
-
-  const updatedTransactions = userData.transactions
-    ? [...userData.transactions, transactionReference]
-    : [transactionReference];
-
-  await userRef.update({
-    investment: newInvestment,
-    transactions: updatedTransactions,
-  });
 }
