@@ -1,13 +1,21 @@
-
+import { createHmac } from 'crypto';
 import admin from 'firebase-admin';
+import fetch from 'node-fetch';
 
+// Firebase initialization
 if (!admin.apps.length) {
   const firebaseAdminSDK = process.env.FIREBASE_ADMIN_SDK;
+
   if (!firebaseAdminSDK) {
     throw new Error("FIREBASE_ADMIN_SDK environment variable is not set");
   }
 
-  const parsedSDK = JSON.parse(firebaseAdminSDK);
+  let parsedSDK;
+  try {
+    parsedSDK = JSON.parse(firebaseAdminSDK);
+  } catch (error) {
+    throw new Error("Invalid JSON in FIREBASE_ADMIN_SDK");
+  }
 
   admin.initializeApp({
     credential: admin.credential.cert(parsedSDK),
@@ -18,14 +26,19 @@ if (!admin.apps.length) {
 const db = admin.database();
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
+if (!PAYSTACK_SECRET_KEY) {
+  throw new Error("PAYSTACK_SECRET_KEY environment variable is not set");
+}
+
+// Validate Paystack signature
 function validatePaystackSignature(req, signature) {
-  const hash = crypto
-    .createHmac('sha512', PAYSTACK_SECRET_KEY)
+  const hash = createHmac('sha512', PAYSTACK_SECRET_KEY)
     .update(JSON.stringify(req.body))
     .digest('hex');
   return hash === signature;
 }
 
+// Verify payment
 async function verifyPayment(transactionReference) {
   try {
     const response = await fetch(
@@ -37,8 +50,10 @@ async function verifyPayment(transactionReference) {
         },
       }
     );
+
     const data = await response.json();
     console.log('Verification Response:', data);
+
     return data.status && data.data.status === 'success' ? data.data : null;
   } catch (error) {
     console.error('Error verifying payment:', error.message);
@@ -46,71 +61,79 @@ async function verifyPayment(transactionReference) {
   }
 }
 
+// Webhook handler
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    console.log('Webhook Received:', req.body);
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed.');
+  }
 
-    const signature = req.headers['x-paystack-signature'];
-    if (!signature || !validatePaystackSignature(req, signature)) {
-      console.error('Invalid Signature');
-      return res.status(400).send('Invalid signature.');
-    }
+  if (!req.body || !req.headers['x-paystack-signature']) {
+    return res.status(400).send('Invalid Request.');
+  }
 
-    const { event, data } = req.body;
+  const signature = req.headers['x-paystack-signature'];
+  if (!validatePaystackSignature(req, signature)) {
+    console.error('Invalid Signature');
+    return res.status(400).send('Invalid signature.');
+  }
 
-    if (event === 'charge.success') {
-      try {
-        const transactionDetails = await verifyPayment(data.reference);
-        if (transactionDetails) {
-          const { email } = transactionDetails.customer;
-          const userUid = await getUserUidByEmail(email);
+  console.log('Webhook Received:', req.body);
+  const { event, data } = req.body;
 
-          if (userUid) {
-            const alreadyProcessed = await checkTransactionProcessed(
-              userUid,
-              transactionDetails.reference
-            );
+  if (event === 'charge.success') {
+    try {
+      const transactionDetails = await verifyPayment(data.reference);
 
-            if (alreadyProcessed) {
-              console.warn('Transaction already processed:', data.reference);
-              return res.status(400).send('Transaction already processed.');
-            }
+      if (transactionDetails) {
+        const { email } = transactionDetails.customer;
+        const userUid = await getUserUidByEmail(email);
 
-            const investmentAmount = transactionDetails.amount / 100;
-            await updateInvestment(userUid, investmentAmount, transactionDetails.reference);
-            console.log('Investment updated successfully');
-            return res.status(200).send('Payment verified and investment updated.');
-          } else {
-            console.warn('User not found for email:', email);
-            return res.status(400).send('User not found.');
+        if (userUid) {
+          const alreadyProcessed = await checkTransactionProcessed(
+            userUid,
+            transactionDetails.reference
+          );
+
+          if (alreadyProcessed) {
+            console.warn('Transaction already processed:', data.reference);
+            return res.status(400).send('Transaction already processed.');
           }
+
+          const investmentAmount = transactionDetails.amount / 100;
+          await updateInvestment(userUid, investmentAmount, transactionDetails.reference);
+          console.log('Investment updated successfully');
+          return res.status(200).send('Payment verified and investment updated.');
         } else {
-          console.error('Payment verification failed for reference:', data.reference);
-          return res.status(400).send('Payment verification failed.');
+          console.warn('User not found for email:', email);
+          return res.status(400).send('User not found.');
         }
-      } catch (error) {
-        console.error('Error processing webhook:', error.message);
-        return res.status(500).send('Internal Server Error.');
+      } else {
+        console.error('Payment verification failed for reference:', data.reference);
+        return res.status(400).send('Payment verification failed.');
       }
-    } else {
-      console.warn('Invalid event type:', event);
-      return res.status(400).send('Invalid event.');
+    } catch (error) {
+      console.error('Error processing webhook:', error.message);
+      return res.status(500).send('Internal Server Error.');
     }
   } else {
-    return res.status(405).send('Method Not Allowed.');
+    console.warn('Invalid event type:', event);
+    return res.status(400).send('Invalid event.');
   }
 }
 
+// Helper functions
 async function getUserUidByEmail(email) {
   try {
-    const usersRef = admin.database().ref('users');
+    const usersRef = db.ref('users');
     const usersSnapshot = await usersRef.once('value');
     const usersData = usersSnapshot.val();
+
     for (let userId in usersData) {
       if (usersData[userId].email === email) {
         return userId;
       }
     }
+
     return null;
   } catch (error) {
     console.error('Error fetching user UID:', error.message);
@@ -120,9 +143,10 @@ async function getUserUidByEmail(email) {
 
 async function checkTransactionProcessed(userUid, transactionReference) {
   try {
-    const userRef = admin.database().ref(`users/${userUid}/transactions`);
+    const userRef = db.ref(`users/${userUid}/transactions`);
     const userSnapshot = await userRef.once('value');
     const userData = userSnapshot.val();
+
     return userData ? userData.includes(transactionReference) : false;
   } catch (error) {
     console.error('Error checking transaction:', error.message);
@@ -132,7 +156,7 @@ async function checkTransactionProcessed(userUid, transactionReference) {
 
 async function updateInvestment(userUid, investmentAmount, transactionReference) {
   try {
-    const userRef = admin.database().ref(`users/${userUid}`);
+    const userRef = db.ref(`users/${userUid}`);
     const userSnapshot = await userRef.once('value');
     const userData = userSnapshot.val();
 
