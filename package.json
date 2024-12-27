@@ -2,16 +2,20 @@
   "name": "fruit-wealth-farming",
   "version": "2.0.0",
   "description": "A platform for wealth creation through fruit farming investments.",
+  "main": "index.html",
   "scripts": {
-    "start": "next start",
+    "dev": "next dev",
     "build": "next build",
-    "dev": "next dev"
+    "start": "next start"
   },
   "dependencies": {
+    "next": "^13.0.0", 
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "firebase-admin": "^11.5.0",
-    "node-fetch": "^2.6.9"
+    "node-fetch": "^3.3.1",
+    "crypto": "^1.0.1"
   },
-  "devDependencies": {},
   "author": "",
   "license": "ISC"
 }
