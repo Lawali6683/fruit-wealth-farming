@@ -12,14 +12,14 @@ if (!admin.apps.length) {
 
   let parsedSDK;
   try {
-    parsedSDK = JSON.parse(firebaseAdminSDK);
+    parsedSDK = JSON.parse(firebaseAdminSDK);  // Parse the JSON string to an object
   } catch (error) {
     throw new Error("Invalid JSON in FIREBASE_ADMIN_SDK");
   }
 
   admin.initializeApp({
     credential: admin.credential.cert(parsedSDK),
-    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
+    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",  // Update your Firebase database URL
   });
 }
 
