@@ -1,8 +1,13 @@
 {
+  "version": 2,
   "rewrites": [
     {
-      "source": "/referral",
-      "destination": "/"
+      "source": "/referral/:referralId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
     },
     {
       "source": "/(.*)",
