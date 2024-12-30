@@ -323,7 +323,7 @@ width: 70px;
       border-bottom: 1px solid red;
       padding: 8px 0;
       overflow-y: auto;  
-      Font-size: 20px; 
+      Font-size: 15px; 
         overflow-y: auto;       
     }
 
@@ -374,7 +374,7 @@ width: 70px;
 </style>      
 </head>
 <body>  
-     <script type="module" src="bonusUpdate.js"></script>
+    <script type="module" src="./notificatio.js"></script>  
 <div id="loading-spinner" style="display: flex; justify-content: center; align-items: center; height: 100vh; ">
   <img src="lod.png" alt="Loading..." style="width: 100%; ">
 </div>
@@ -411,8 +411,8 @@ width: 70px;
     <div class="container">
       <div class="info">
        <p class="you"> Your product upgrade: <span id="userProductDisplay"></span></p>
-        <p class="your">Your daily income: <span id="userDailyIcomeDisplay"></span></p>
-       <p Class="blas">Balance: <span id="userBalanceDispay"></span></p>
+        <p class="your">Your daily income: <span id="userDailyIncomeDisplay"></span></p>
+       <p Class="blas">Balance: <span id="userBalanceDisplay"></span></p>
       </div>
     </div></div>
 
@@ -547,39 +547,9 @@ width: 70px;
         const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
         window.location.href = mailtoUrl;
     });
-</script>
-   <script> document.addEventListener('DOMContentLoaded', function() {
-  const productElement = document.getElementById('userProductDisplay');
-  const welcomeMessage = document.getElementById('new-welcome-message');
-  const closeButton = document.getElementById('close-message');
+</script>  
 
-  // Function to check and display the welcome message based on userProductDisplay
-  function checkProductDisplay() {
-    const productCount = Number(productElement.innerText.trim());
-
-    if (productCount === 0) {
-      welcomeMessage.classList.remove('hidden'); // Show the message if product count is 0
-    } else {
-      welcomeMessage.classList.add('hidden'); // Hide the message if product count changes
-    }
-  }
-
-  // Check every second for changes in the product count
-  const intervalId = setInterval(checkProductDisplay, 1000);
-  
-  closeButton.addEventListener('click', function() {
-    welcomeMessage.classList.add('hidden');
-    clearInterval(intervalId); // Stop checking
-  });
-
-  // Initial check when the page loads
-  checkProductDisplay();
-});
-
-
-</script>
-
-<script type="module">
+   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
   import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -600,245 +570,162 @@ width: 70px;
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const auth = getAuth(app);
-     
-    // DOM Elements
-    const loadingSpinner = document.getElementById("loading-spinner");
-    const dashboardContent = document.getElementById("dashboard-content");
-    const fullNameDisplay = document.getElementById("fullNameDisplay");
-    const userProductDisplay = document.getElementById("userProductDisplay");
-    const userDailyIncomeDisplay = document.getElementById("userDailyIcomeDisplay");
-    const userBalanceDisplay = document.getElementById("userBalanceDispay");
-    const userName = document.getElementById("userName");
-    const newWelcomeMessage = document.getElementById("new-welcome-message");
-    const startInvestment = document.getElementById("start-investment");
-    const closeMessage = document.getElementById("close-message");
 
-    // Monitor Authentication State
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userId = user.uid;
-        const userRef = ref(db, `users/${userId}`);
+  // DOM Elements
+  const loadingSpinner = document.getElementById("loading-spinner");
+  const dashboardContent = document.getElementById("dashboard-content");
+  const fullNameDisplay = document.getElementById("fullNameDisplay");
+  const userProductDisplay = document.getElementById("userProductDisplay");
+  const userDailyIncomeDisplay = document.getElementById("userDailyIncomeDisplay");
+  const userBalanceDisplay = document.getElementById("userBalanceDisplay");
+  const notificationBell = document.getElementById("notificationBell");
+  const notificationCount = document.getElementById("notificationCount");
+  const notificationList = document.getElementById("notificationList");
+  const clearNotifications = document.getElementById("clearNotifications");
+  const newWelcomeMessage = document.getElementById("new-welcome-message");
+  const startInvestment = document.getElementById("start-investment");
+  const closeMessage = document.getElementById("close-message");
+  const notificationSound = new Audio("do.mp3");
 
-        // Load User Data
-        onValue(userRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const userData = snapshot.val();
-            displayUserData(userData);
-          } else {
-            console.error("User data not found.");
-          }
-        });
+  
+  // LocalStorage keys
+  const NOTIFICATIONS_KEY = "userNotifications";
 
-        loadingSpinner.style.display = "none";
-        dashboardContent.style.display = "block";
-      } else {
-        window.location.href = "login.html";
-      }
-    });
-           
-    
-    // Display User Data Function
-    function displayUserData(userData) {
-      fullNameDisplay.textContent = userData.fullName || "User";
-      userProductDisplay.textContent = formatCurrency(userData.investment || "0.00");
-      userDailyIncomeDisplay.textContent = formatCurrency(userData.dailyUpgrade || "0.00");
-      userBalanceDisplay.textContent = formatCurrency(userData.userBalance || "0.00");
-      userName.textContent = userData.fullName || "User";
-    }
+  // Initialize notifications from localStorage
+  let notifications = JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY)) || [];
+  updateNotificationUI();
 
-    // Format Currency to Naira (₦)
-    function formatCurrency(amount) {
-      return `₦${parseFloat(amount).toFixed(2)}`;
-    }
-     
-  window.onload = () => {
-    const notificationBell = document.getElementById("notificationBell");
-    const notificationDropdown = document.getElementById("notificationDropdown");
-    const notificationCount = document.getElementById("notificationCount");
-    const notificationList = document.getElementById("notificationList");
-    const clearNotifications = document.getElementById("clearNotifications");
-    const notificationAudio = new Audio("od.mp3");
-    let audioPlayed = false;
+  // Monitor Authentication State
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      const userId = user.uid;
+      const userRef = ref(db, `users/${userId}`);
 
-    // Toggle Notification Dropdown
-    let dropdownVisible = false;
-    notificationBell.addEventListener("click", () => {
-      dropdownVisible = !dropdownVisible;
-      notificationDropdown.style.display = dropdownVisible ? "block" : "none";
-
-      if (dropdownVisible) {
-        updateNotificationCount(0);
-        audioPlayed = true;
-      }
-    });
-
-    // Update Notification Count
-    function updateNotificationCount(count) {
-      if (count > 0) {
-        notificationCount.innerText = count;
-        notificationCount.style.display = "block";
-      } else {
-        notificationCount.style.display = "none";
-      }
-    }
-
-    // Render Notifications
-    function renderNotifications(notifications) {
-      notificationList.innerHTML = "";
-      if (notifications && Object.keys(notifications).length > 0) {
-        Object.values(notifications).forEach((notif) => {
-          const li = document.createElement("li");
-          li.textContent = notif.message;
-          notificationList.appendChild(li);
-        });
-      } else {
-        const li = document.createElement("li");
-        li.innerText = "No Notifications";
-        notificationList.appendChild(li);
-      }
-    }
-
-    // Clear All Notifications
-    clearNotifications.addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (user) {
-        const notificationsRef = ref(db, `users/${user.uid}/notifications`);
-        await set(notificationsRef, null);
-        renderNotifications({});
-        updateNotificationCount(0);
-      }
-    });
-
-    // Monitor Authentication State for Notifications
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const notificationsRef = ref(db, `users/${user.uid}/notifications`);
-        const userRef = ref(db, `users/${user.uid}`);
-        let previousData = {};
-
-        // Monitor Notifications
-        onValue(notificationsRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const notifications = snapshot.val();
-            renderNotifications(notifications);
-
-            const unreadCount = Object.keys(notifications).length;
-            updateNotificationCount(unreadCount);
-
-            if (!audioPlayed && unreadCount > 0) {
-              notificationBell.addEventListener("click", () => {
-                if (notificationAudio.paused) {
-                  notificationAudio.play().catch((error) => {
-                    console.error("Audio playback failed:", error);
-                  });
-                }
-              });
-            }
-          } else {
-            renderNotifications({});
-            updateNotificationCount(0);
-          }
-        });
-
-        // Monitor User Data for Notifications
-        onValue(userRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const userData = snapshot.val();
-
-            if (userData.investment > (previousData.investment || 0)) {
-              const newInvestment = userData.investment - (previousData.investment || 0);
-              sendNotification(notificationsRef, `You invested ₦${newInvestment}.`);
-            }
-
-            if (userData.userBalance > (previousData.userBalance || 0)) {
-              const newBalance = userData.userBalance - (previousData.userBalance || 0);
-              sendNotification(notificationsRef, `Your balance increased by ₦${newBalance}.`);
-            }
-
-            if (previousData.userBalance && userData.userBalance < previousData.userBalance) {
-              const withdrawalAmount = previousData.userBalance - userData.userBalance;
-              sendNotification(notificationsRef, `You withdrew ₦${withdrawalAmount}.`);
-            }         
-            previousData = { ...userData };
-          }
-        });
-
-        // Send Notification Function
-        function sendNotification(notificationsRef, message) {
-          const newNotificationKey = `notif_${Date.now()}`;
-          const newNotificationRef = child(notificationsRef, newNotificationKey);
-          set(newNotificationRef, { message }).catch((error) => {
-            console.error("Failed to send notification:", error);
-          });
+      // Load User Data
+      onValue(userRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          displayUserData(userData);
+          checkAndNotify(userData);
+        } else {
+          console.error("User data not found.");
         }
+      });
 
-        // Fetch Referral Name
-        function fetchReferralName(referralById, callback) {
-          const referralUserRef = ref(db, `users/${referralById}`);
-          get(referralUserRef)
-            .then((snapshot) => {
-              if (snapshot.exists()) {
-                const referralUserData = snapshot.val();
-                callback(referralUserData.fullName || "User");
-              } else {
-                callback("User");
-              }
-            })
-            .catch((error) => {
-              console.error("Failed to fetch referral name:", error);
-              callback("User");
-            });
-        }
-      }
-    });
-       
-     // Load User Data After Sign-In
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userId = user.uid;
-        const userRef = ref(db, `users/${userId}`);
-
-        // Load User Data and Listen for Changes
-        onValue(userRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const userData = snapshot.val();
-            localStorage.setItem("userData", JSON.stringify(userData)); // Store in localStorage
-            displayUserData(userData);
-
-            // Check dailyUpgrade and show message if it's 0.00
-            if (parseFloat(userData.dailyUpgrade) === 0.00) {
-              setTimeout(() => {
-                showWelcomeMessage(userData.fullName || "User");
-              }, 300);
-            }
-          } else {
-            console.error(`User data not found for userId: ${userId}`);
-          }
-        }, (error) => {
-          console.error("Firebase read failed: ", error.message);
-        });
-        }
+      loadingSpinner.style.display = "none";
+      dashboardContent.style.display = "block";
+    } else {
+      window.location.href = "login.html";
+    }
   });
-         
-          // Show Welcome Message
-    function showWelcomeMessage(name) {
-      document.getElementById("userName").textContent = name;
-      newWelcomeMessage.classList.remove("hidden");
-      newWelcomeMessage.style.display = "block";
 
-      // Close message functionality
-      closeMessage.addEventListener("click", () => {
-        newWelcomeMessage.style.display = "none";
-      });
+  // Display User Data Function
+  function displayUserData(userData) {
+    fullNameDisplay.textContent = userData.fullName || "User";
+    userProductDisplay.textContent = formatCurrency(userData.investment || 0);
+    userDailyIncomeDisplay.textContent = formatCurrency(userData.dailyUpgrade || 0);
+    userBalanceDisplay.textContent = formatCurrency(userData.userBalance || 0);
+  }
 
-      // Button click navigation
-      startInvestment.addEventListener("click", () => {
-        window.location.href = "invested.html";
-      });
+  // Check and Notify
+  function checkAndNotify(userData) {
+    const newNotifications = [];
+
+    // Check Investment
+    if (userData.investment) {
+      const investmentNotification = `${userData.fullName}, you invested ₦${parseFloat(userData.investment).toFixed(2)}`;
+      if (!notifications.some((n) => n.message === investmentNotification)) {
+        newNotifications.push({
+          type: "investment",
+          message: investmentNotification,
+        });
+      }
     }
-         
 
-   // Menu Navigation
+    // Check Daily Upgrade
+    if (userData.dailyUpgrade) {
+      const dailyUpgradeNotification = `${userData.fullName}, you received a daily upgrade of ₦${parseFloat(userData.dailyUpgrade).toFixed(2)}`;
+      if (!notifications.some((n) => n.message === dailyUpgradeNotification)) {
+        newNotifications.push({
+          type: "dailyUpgrade",
+          message: dailyUpgradeNotification,
+        });
+      }
+    }
+
+    // Check User Balance
+    if (userData.userBalance) {
+      const balanceNotification = `${userData.fullName}, your new balance is ₦${parseFloat(userData.userBalance).toFixed(2)}`;
+      if (!notifications.some((n) => n.message === balanceNotification)) {
+        newNotifications.push({
+          type: "userBalance",
+          message: balanceNotification,
+        });
+      }
+    }
+
+// Add new notifications
+    if (newNotifications.length > 0) {
+      notifications = [...notifications, ...newNotifications];
+      localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+      playNotificationSound();
+    }
+
+    updateNotificationUI();
+  }
+  
+    
+
+  // Update Notification UI
+  function updateNotificationUI() {
+    notificationCount.textContent = notifications.length > 0 ? notifications.length : "0";
+    notificationList.innerHTML = notifications
+      .map((notification) => `<li>${notification.message}</li>`)
+      .join("");
+}
+    
+    // Play Notification Sound
+  function playNotificationSound() {
+    notificationSound.play().catch((error) => console.error("Notification sound failed to play:", error));
+  }
+
+  // Clear Notifications
+  clearNotifications.addEventListener("click", () => {
+    notifications = [];
+    localStorage.removeItem(NOTIFICATIONS_KEY);
+    updateNotificationUI();
+  });
+
+  // Notification Bell Click (toggle dropdown)
+  notificationBell.addEventListener("click", () => {
+    const dropdown = document.getElementById("notificationDropdown");
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+  });
+
+  // Format Currency
+  function formatCurrency(amount) {
+    return `₦${parseFloat(amount).toFixed(2)}`;
+  }
+  
+  // Check Investment Status
+  function checkInvestmentStatus(userData) {
+    if (!userData.investment || parseFloat(userData.investment) === 0) {
+      newWelcomeMessage.style.display = "block";
+    } else {
+      newWelcomeMessage.style.display = "none";
+    }
+  }
+
+  // Show Welcome Message
+  startInvestment.addEventListener("click", () => {
+    window.location.href = "invested.html";
+  });
+
+  closeMessage.addEventListener("click", () => {
+    newWelcomeMessage.style.display = "none";
+  });
+  
+    // Menu Navigation
     document.getElementById("withdrawal").addEventListener("click", () => {
       window.location.href = "withdrawal.html";
     });
@@ -851,7 +738,7 @@ width: 70px;
       window.location.href = "Invete.html";
     });
 
-    document.getElementById("daily-income2").addEventListener("click", () => {
+ document.getElementById("daily-income2").addEventListener("click", () => {
       checkDailyIncome();
     });
 
@@ -874,9 +761,18 @@ width: 70px;
       } else {
         window.location.href = "upgrade.html";
       }
-    }     
+         
 }
 </script>
-    
-      </body>
+
+<script> document.getElementById('close-message').addEventListener('click', function () {
+    const welcomeMessage = document.getElementById('new-welcome-message');
+    welcomeMessage.style.display = 'none'; 
+  });
+</script>
+<script> document.getElementById('start-investment').addEventListener('click', function () {
+    window.location.href = 'invested.html'; 
+  });
+</script>
+</body>
 </html>
