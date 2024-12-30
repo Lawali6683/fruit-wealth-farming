@@ -95,9 +95,98 @@
             background-color: #00796B;
             color: white;
         }
+        
+        /* PIN Form Styling */
+#pinForm {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 1000;
+    width: 90%;
+    max-width: 400px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+#pinForm label {
+    font-size: 1rem;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+}
+
+#pinForm input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    outline: none;
+}
+
+#pinForm input:focus {
+    border-color: #00796B;
+    box-shadow: 0 0 5px rgba(0, 121, 107, 0.5);
+}
+
+#pinForm button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    background-color: #00796B;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#pinForm button:hover {
+    background-color: #004D40;
+}
+
+/* Optional overlay to dim background */
+#pinFormOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
     </style>
 </head>
 <body>
+    
+<div id="pinFormOverlay"></div>
+
+
+<form id="pinForm">
+    <label for="userPin">Enter PIN:</label>
+    <input type="password" id="userPin" placeholder="Enter your 6-digital PIN" required>
+    <button type="submit">Submit PIN</button>
+</form>
     <header>
         <h4>Welcome to Your FWF Campany Withdrawal Page</h4>
        <span> <img src="wi.png" style="width: 50px; height: 50%;"></span><i>Bank Transfer 7% Network fee, </i>
@@ -302,6 +391,16 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+loadingElement.style.display = "block"; 
+
+loadingElement.style.display = "none"; 
+function toggleLoading(show) {
+    loadingElement.style.display = show ? "block" : "none";
+    withdrawForm.style.display = show ? "none" : "block";
+    pinForm.style.display = "none";
+}
+
+
 // Load User Data
 function loadUserData() {
     const userRef = ref(database, `users/${currentUserId}`);
@@ -448,7 +547,7 @@ async function processTransfer(accountNumber, bankCode, amount, accountName) {
         },
         body: JSON.stringify({
             source: "balance",
-            amount: Math.round(amount * 100), // Convert to kobo
+            amount: Math.round(amount * 100), 
             recipient: {
                 type: "nuban",
                 name: accountName,
