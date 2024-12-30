@@ -436,7 +436,7 @@ function loadWithdrawalHistory() {
 }
 
 // Add Audio for Alerts
-const alertSound = new Audio("od.mp3");
+const alertSound = new Audio("https://fruit-wealth-farming.vercel.app/do.mp3");
 
 // Function to Play Alert Sound
 function playAlertSound() {
@@ -473,7 +473,7 @@ withdrawForm.addEventListener("submit", async (e) => {
         // Confirm Transfer
         playAlertSound();
         const confirmTransfer = confirm(
-            `Are you sure you want to transfer ₦${amount} to ${accountName} (${bankName} - ${accountNumber})?`
+            `Are you sure you want to transfer ₦${amount} to ${accountName} ${bankName} - ${accountNumber}?`
         );
 
         if (!confirmTransfer) {
@@ -513,7 +513,7 @@ withdrawForm.addEventListener("submit", async (e) => {
                     }
                 } else {
                     playAlertSound();
-                    alert("PIN not defined.");
+                    alert("PIN not correct.");
                 }
             });
         });
