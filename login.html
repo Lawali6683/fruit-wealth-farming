@@ -351,7 +351,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         alert("Login Successful!");
-        window.location.href = "dashboard.html";
+        window.location.href = "dashLod.html";
     } catch (error) {
         if (error.code === "auth/user-not-found") {
             alert("This email address is not registered in Fruit Wealth Farming. Register now!");
@@ -381,10 +381,10 @@ const installButton = document.getElementById('install-btn');
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  installButton.style.display = 'block'; // Show install button
+  installButton.style.display = 'block'; 
 
   installButton.addEventListener('click', () => {
-    installButton.style.display = 'none'; // Hide the button
+    installButton.style.display = 'none'; 
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
