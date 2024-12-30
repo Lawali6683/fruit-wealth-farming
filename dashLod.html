@@ -62,6 +62,13 @@
     Font-weight: bold;
     Color: white;    
 }
+h2{
+    Text-align: center;
+    Font-size: 20px;
+    Font-weight: bold;
+    Color: red;
+    
+}
   </style>
 </head>
 <body>
@@ -75,7 +82,7 @@
     <i class="do">F</i>
   </div>  
   <div>
-  "Please wait while we verify you're human."
+  <h2>"Please wait while we verify you're human."</h2>
   </div>
   <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
@@ -103,10 +110,8 @@ const loadingScreen = document.getElementById("loadingScreen");
 
 // Clear loading screen once everything is ready
 window.onload = () => {
-  loadingScreen.style.display = "none"; // Remove the loading screen
-  console.log("Page loaded and loading screen removed.");
-};
-
+  
+  
 // Handle user logic after authentication and data retrieval
 onAuthStateChanged(auth, user => {
   if (user) {
@@ -216,10 +221,13 @@ function handleInvestmentLogic(userId, userData) {
       }
       setTimeout(() => {
         window.location.href = "dashboard.html";
-      }, 2000);
+      }, 200);
     });
   } else {
     alert("🎉 Start Your Business with FWF Company! Easily deposit your funds into your FWF account via bank transfer, POS, or other payment methods. Copy your account number, send your funds effortlessly, and start earning profits immediately. FWF is proud to have you with us! 🙏");
+    loadingScreen.style.display = "none";
+  console.log("Page loaded and loading screen removed.");
+};
     window.location.href = "dashboard.html";
   }
 }
