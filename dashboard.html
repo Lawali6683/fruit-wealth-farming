@@ -585,7 +585,7 @@ width: 70px;
   const newWelcomeMessage = document.getElementById("new-welcome-message");
   const startInvestment = document.getElementById("start-investment");
   const closeMessage = document.getElementById("close-message");
-  const notificationSound = new Audio("do.mp3");
+  const notificationSound = new Audio("https://fruit-wealth-farming.vercel.app/do.mp3");
 
   
   // LocalStorage keys
@@ -674,8 +674,6 @@ width: 70px;
     updateNotificationUI();
   }
   
-    
-
   // Update Notification UI
   function updateNotificationUI() {
     notificationCount.textContent = notifications.length > 0 ? notifications.length : "0";
