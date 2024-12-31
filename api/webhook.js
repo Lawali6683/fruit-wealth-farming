@@ -115,6 +115,44 @@ export default async function handler(req, res) {
       console.error('Error processing webhook:', error.message);
       return res.status(500).send('Internal Server Error.');
     }
+  } else if (event === 'withdrawal.success' || event === 'withdrawal.failed') {
+    try {
+      const transactionDetails = await verifyPayment(data.reference);
+
+      if (transactionDetails) {
+        const { email } = transactionDetails.customer;
+        const userUid = await getUserUidByEmail(email);
+
+        if (userUid) {
+          const withdrawalAmount = transactionDetails.amount / 100; // Convert to Naira
+
+          const userRef = db.ref(`users/${userUid}`);
+          const userSnapshot = await userRef.once('value');
+          const userData = userSnapshot.val();
+
+          if (event === 'withdrawal.success') {
+            // Update user balance if successful withdrawal
+            await userRef.update({
+              userBalance: userData.userBalance - withdrawalAmount,
+              lastWithdrawalStatus: 'Success',
+            });
+            return res.status(200).send('Withdrawal success.');
+          } else if (event === 'withdrawal.failed') {
+            // Mark the withdrawal as failed
+            await userRef.update({
+              lastWithdrawalStatus: 'Failed',
+            });
+            return res.status(200).send('Withdrawal failed.');
+          }
+        } else {
+          return res.status(400).send('User not found.');
+        }
+      } else {
+        return res.status(400).send('Payment verification failed.');
+      }
+    } catch (error) {
+      return res.status(500).send('Error on server side.');
+    }
   } else {
     console.warn('Invalid event type:', event);
     return res.status(400).send('Invalid event.');
