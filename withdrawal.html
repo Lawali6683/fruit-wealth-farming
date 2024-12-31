@@ -480,7 +480,7 @@ function playAlertSound() {
             return;
         }
 
-        const userPin = prompt("Enter your 6-digit PIN");
+        const userPin = prompt("Enter your 5-digit Transfer PIN");
         if (!userPin || userPin !== userDetails.transferP) {
             alert("Invalid PIN.");
             hideLoading();
