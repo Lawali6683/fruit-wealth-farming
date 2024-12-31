@@ -3,212 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Withdrawal Page</title>    
+    <title>Withdrawal | Fruit Wealth Farming</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-            color: #333;
-        }
-
-        header {
-            background-color: #00796B;
-            color: #fff;
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-
-        h2, h3 {          
-           text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .balance-container {
-            font-size: 1.2rem;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .withdraw-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input, select {
-            padding: 10px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        button {
-            padding: 12px;
-            font-size: 1rem;
-            background-color: #00796B;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        button:hover {
-            background-color: #004D40;
-        }
-
-        .loading {
-            text-align: center;
-            display: none;
-            font-size: 1rem;
-        }
-
-        .history-table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-            font-size: 10px;
-        }
-
-        .history-table th, .history-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            Font-size: 10px;
-            
-        }
-
-        .history-table th {
-            background-color: #00796B;
-            color: white;
-        }
-        
-        /* PIN Form Styling */
-#pinForm {
-    display: none; /* Hidden by default */
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #ffffff;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    padding: 20px;
-    z-index: 1000;
-    width: 90%;
-    max-width: 400px;
-    animation: fadeIn 0.3s ease-in-out;
+        /* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-#pinForm label {
+body {
+    font-family: Arial, sans-serif;
+    background: #f9f9f9;
+    color: #333;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    color: #00796B;
+}
+
+.header p {
+    font-size: 1rem;
+    color: #555;
+}
+
+.info {
+    background: #f1f1f1;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.info p {
+    margin: 8px 0;
     font-size: 1rem;
     color: #333;
-    font-weight: bold;
-    margin-bottom: 10px;
-    display: block;
 }
 
-#pinForm input {
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 10px;
-    font-size: 1rem;
     border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 15px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #00796B;
     outline: none;
 }
 
-#pinForm input:focus {
-    border-color: #00796B;
-    box-shadow: 0 0 5px rgba(0, 121, 107, 0.5);
-}
-
-#pinForm button {
+.btn {
+    display: block;
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     font-size: 1rem;
-    background-color: #00796B;
-    color: #ffffff;
+    background: #00796B;
+    color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
-#pinForm button:hover {
-    background-color: #004D40;
+.btn:hover {
+    background: #00594c;
 }
 
-/* Optional overlay to dim background */
-#pinFormOverlay {
+/* Loading Screen */
+#loadingScreen {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-/* Fade-in animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translate(-50%, -60%);
+#loadingScreen span {
+    animation: spin 1s linear infinite;
+    border: 4px solid white;
+    border-top: 4px solid #00796B;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
     }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%);
+    100% {
+        transform: rotate(360deg);
     }
+}
+
+
+footer {
+    text-align: center;
+    background-color: #00796B;
+    color: #ecf0f1;
+    padding: 20px;
+    font-size: 1rem;
+    border-top: 3px solid rgba(255, 255, 255, 0.1);
 }
     </style>
+    <style>
+       
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #95ffe091;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+
+.btn {
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 16px;
+    background-color: #00796B;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.btn:hover {
+    background-color: #004d40;
+}
+
+.history-container {
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 500px;
+    overflow-y: auto;
+    display: none;
+}
+
+.transaction {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.transaction p {
+    margin: 5px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.transaction p strong {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.transaction hr {
+    margin-top: 10px;
+    border: 0;
+    border-top: 1px solid #eee;
+}
+header {
+            background-color: #00796B;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .container5 {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #9cff959c;
+            Font-size: 15px;
+            Font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+    </style>
+    <style>
+    #email-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 2px;
+            width: 70px;
+            height: 70px;
+            Top: 220px;
+            
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        #email-icon:hover {
+            transform: scale(1.1);
+        }
+
+        #email-icon img {
+            width: 70px;
+            height: 70px;
+            Border-radius: 50%;
+        }
+             
+</style>
 </head>
 <body>
-    
-<div id="pinFormOverlay"></div>
+    <div id="email-icon">
+    <img src="sup.png" alt="Support Icon">
+</div>
 
+<script>
+    document.getElementById('email-icon').addEventListener('click', function () {
+        const email = 'fruitwealthfarming@gmail.com';
+        const subject = encodeURIComponent("Customer Inquiry from Fruit Wealth Farming Invest");
+        const body = encodeURIComponent("Dear Fruit Wealth Farming,\n\nI have questions regarding your services. Please assist.\n\nThank you.");
+        const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+        window.location.href = mailtoUrl;
+    });
+</script>
 
-<form id="pinForm">
-    <label for="userPin">Enter PIN:</label>
-    <input type="password" id="userPin" placeholder="Enter your 6-digital PIN" required>
-    <button type="submit">Submit PIN</button>
-</form>
     <header>
-        <h4>Welcome to Your FWF Campany Withdrawal Page</h4>
+        <h4>Welcome To Your FWF Campany Transfer Page</h4>
        <span> <img src="wi.png" style="width: 50px; height: 50%;"></span><i>Bank Transfer 7% Network fee, </i>
     </header>
-    
+    <div id="loadingScreen">
+        <span></span>
+    </div>
     <div class="container">
-        <h2>Welcome, <span id="userFullName"></span> 👋</h2>
-        <div class="balance-container">
-            Balance: ₦<span id="userBalance">0.00</span>
+        <div class="container5">           
+            <p id="welcomeMessage">Hello,  👋</p>
+                            <p>Balance: <span id="userBalance">₦0.00</span></p>
         </div>
-        <hr>
-
-        <h3>Make a Withdrawal</h3>
-        <form class="withdraw-form" id="withdrawForm">
-            <label for="amount">Amount:</label>
-            <input type="number" id="amount" placeholder="Enter amount (min ₦500)" min="500" required>
-
-            <label for="bank">Bank Name:</label>
-        <select id="bank" required>
-                  
-    <option value="">Select Bank</option>
-    <option value="058">GTBank</option>
+        <form id="withdrawForm">
+            <div class="form-group">
+                <label for="amount">Amount (₦)</label>
+                <input type="number" id="amount" placeholder="Enter amount" min="500" required>
+            </div>
+            <div class="form-group">
+                <label for="bank">Bank</label>
+                <select id="bank" required>
+                    <option value="">Select Bank</option>
+       <option value="058">GTBank</option>
     <option value="044">Access Bank</option>
     <option value="035">Wema Bank</option>
     <option value="585">OPay</option>
@@ -243,198 +326,127 @@
     <option value="50211">Kuda Bank</option>
     <option value="303">Lotus Bank</option>
     <option value="125">Rubies MFB</option>
-</select>
-
-
-            <label for="accountNumber">Bank Account Number:</label>
-            <input type="text" id="accountNumber" placeholder="Enter account number" required>
-
-            <button type="submit">Transfer</button>
-        </form>
-        <div class="loading" id="loading">
-            Loading, please wait...
+</select>            
+                
+            </div>
+            <div class="form-group">
+                <label for="accountNumber">Account Number</label>
+                <input type="text" id="accountNumber" placeholder="Enter account number" required>
+            </div>
+            <button type="submit" class="btn">Submit</button>
+        </form>        
+    </div> 
+              
+    <div class="container">
+               <button id="toggleHistoryBtn" class="btn">Transaction History</button>       
+        <div id="historyContainer" class="history-container">
+            <div class="transaction">
+                <p><strong></strong> </p>
+                <p><strong></strong></p>
+                <p><strong></strong> </p>
+                <p><strong></strong> </p>
+                <hr>
+            </div>
+            <div class="transaction">
+                <p><strong></strong></p>
+                <p><strong></strong></p>
+                <p><strong></strong></p>
+                <p><strong></strong></p>
+                <hr>
+            </div>
         </div>
-
-        <h3>Withdrawal History</h3>
-        <table class="history-table" id="historyTable">
-            <thead>
-                <tr>
-                    <th>Amount</th>
-                    <th>Bank</th>
-                    <th>Account</th>
-                    <th>Name</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-               
-            </tbody>
-        </table>
-    </div>
-
-    <style>
-    #email-icon {
-            position: fixed;
-            bottom: 20px;
-            right: 2px;
-            width: 70px;
-            height: 70px;
-            Top: 220px;
-            
-            border-radius: 50%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        #email-icon:hover {
-            transform: scale(1.1);
-        }
-
-        #email-icon img {
-            width: 70px;
-            height: 70px;
-            Border-radius: 50%;
-        }
-        
-        footer {
-    text-align: center;
-    background-color: #00796B;
-    color: #ecf0f1;
-    padding: 20px;
-    font-size: 1rem;
-    border-top: 3px solid rgba(255, 255, 255, 0.1);
-}
-</style>
-
-<div id="email-icon">
-    <img src="sup.png" alt="Support Icon">
-</div>
-
-<script>
-    document.getElementById('email-icon').addEventListener('click', function () {
-        const email = 'fruitwealthfarming@gmail.com';
-        const subject = encodeURIComponent("Customer Inquiry from Fruit Wealth Farming Invest");
-        const body = encodeURIComponent("Dear Fruit Wealth Farming,\n\nI have questions regarding your services. Please assist.\n\nThank you.");
-        const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
-        window.location.href = mailtoUrl;
-    });
-</script>
-<footer>
+    </div>    
+          <footer>
         <p>&copy; Fruit Wealth Farming. All rights reserved.</p>
-    </footer>
-           
- <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    </footer> 
+    <script>
+       
+const toggleHistoryBtn = document.getElementById("toggleHistoryBtn");
+const historyContainer = document.getElementById("historyContainer");
 
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
-    authDomain: "fruit-wealth-farming.firebaseapp.com",
-    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
-    projectId: "fruit-wealth-farming",
-    storageBucket: "fruit-wealth-farming.appspot.com",
-    messagingSenderId: "417203511096",
-    appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
-    measurementId: "G-BZFLHB4KM2",
-};
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const database = getDatabase();
-
-// Fetch PAYSTACK_SECRET_KEY from server
-let PAYSTACK_SECRET_KEY = "";
-async function fetchPaystackKey() {
-    try {
-        const response = await fetch("/api/get-paystack-secret-key");
-        const data = await response.json();
-        PAYSTACK_SECRET_KEY = data.key;
-        if (!PAYSTACK_SECRET_KEY) {
-            throw new Error("Paystack key not retrieved!");
-        }
-        console.log("Paystack key loaded successfully.");
-    } catch (error) {
-        console.error("Error fetching Paystack key:", error);
-    }
-}
-await fetchPaystackKey();
-
-// DOM Elements
-const withdrawForm = document.getElementById("withdrawForm");
-const userFullName = document.getElementById("userFullName");
-const userBalanceElement = document.getElementById("userBalance");
-const loadingElement = document.getElementById("loading");
-const historyTable = document.getElementById("historyTable").querySelector("tbody");
-const pinForm = document.getElementById("pinForm");
-const userPinInput = document.getElementById("userPin");
-
-// Global Variables
-let currentUserId = null;
-let currentBalance = 0;
-
-// Authentication State Listener
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        currentUserId = user.uid;
-        loadUserData();
-        loadWithdrawalHistory();
+toggleHistoryBtn.addEventListener("click", () => {
+    // Toggle display between none and block (show/hide)
+    if (historyContainer.style.display === "none" || historyContainer.style.display === "") {
+        historyContainer.style.display = "block";
     } else {
-        alert("User not authenticated! Please log in.");
+        historyContainer.style.display = "none";
     }
 });
+    </script>
+        <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
-loadingElement.style.display = "block"; 
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+        authDomain: "fruit-wealth-farming.firebaseapp.com",
+        databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
+        projectId: "fruit-wealth-farming",
+        storageBucket: "fruit-wealth-farming.appspot.com",
+        messagingSenderId: "417203511096",
+        appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+        measurementId: "G-BZFLHB4KM2",
+    };
 
-loadingElement.style.display = "none"; 
-function toggleLoading(show) {
-    loadingElement.style.display = show ? "block" : "none";
-    withdrawForm.style.display = show ? "none" : "block";
-    pinForm.style.display = "none";
-}
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth();
+    const welcomeMessage = document.getElementById("welcomeMessage");
+    const userBalanceElement = document.getElementById("userBalance");
+    const withdrawForm = document.getElementById("withdrawForm");
+    const loadingScreen = document.getElementById("loadingScreen");
+    const historyContainer = document.getElementById("historyContainer"); 
 
+    const showLoading = () => (loadingScreen.style.display = "flex");
+    const hideLoading = () => (loadingScreen.style.display = "none");
 
-// Load User Data
-function loadUserData() {
-    const userRef = ref(database, `users/${currentUserId}`);
-    get(userRef).then((snapshot) => {
+    const fetchUserDetails = async (uid) => {
+        const userRef = ref(db, `users/${uid}`);
+        const snapshot = await get(userRef);
         if (snapshot.exists()) {
-            const data = snapshot.val();
-            userFullName.textContent = data.fullName;
-            currentBalance = parseFloat(data.userBalance || 0);
-            userBalanceElement.textContent = currentBalance.toFixed(2);
+            const userData = snapshot.val();
+            welcomeMessage.textContent = `Hello, ${userData.fullName} 👋`;
+            userBalanceElement.textContent = `₦${userData.userBalance.toFixed(2)}`;
+            return userData;
+        } else {
+            alert("User not found.");
+            hideLoading();
+            return null;
+            
         }
-    });
-}
+    };
 
-// Load Withdrawal History
-function loadWithdrawalHistory() {
-    const historyRef = ref(database, `users/${currentUserId}/historyWithdrawal`);
-    get(historyRef).then((snapshot) => {
-        if (snapshot.exists()) {
-            historyTable.innerHTML = "";
-            const history = snapshot.val();
-            Object.values(history).forEach((entry) => {
-                const row = `<tr>
-                    <td>₦${entry.amount}</td>
-                    <td>${entry.bankName}</td>
-                    <td>${entry.accountNumber}</td>
-                    <td>${entry.accountName}</td>
-                    <td>${entry.date}</td>
-                </tr>`;
-                historyTable.insertAdjacentHTML("beforeend", row);
-            });
-        }
-    });
-}
+    // Function to save transaction details
+    const saveTransactionHistory = (uid, amount, bankName, accountName) => {
+        const historyRef = ref(db, `transactions/${uid}`);
+        const newTransaction = push(historyRef);
+        set(newTransaction, {
+            amount: amount,
+            bankName: bankName,
+            accountName: accountName,
+            date: new Date().toLocaleString(),
+        });
+    };
 
+    // Function to display transaction history
+    const displayTransactionHistory = (transactions) => {
+        historyContainer.innerHTML = ''; // Clear previous history
+        transactions.forEach((transaction) => {
+            const transactionElement = document.createElement("div");
+            transactionElement.classList.add("transaction");
+            transactionElement.innerHTML = `
+                <p><strong>Amount:</strong> ₦${transaction.amount}</p>
+                <p><strong>Bank:</strong> ${transaction.bankName}</p>
+                <p><strong>Account Name:</strong> ${transaction.accountName}</p>
+                <p><strong>Date:</strong> ${transaction.date}</p>
+                <hr>
+            `;
+            historyContainer.appendChild(transactionElement);
+        });
+    };
 // Add Audio for Alerts
 const alertSound = new Audio("https://fruit-wealth-farming.vercel.app/do.mp3");
 
@@ -442,149 +454,100 @@ const alertSound = new Audio("https://fruit-wealth-farming.vercel.app/do.mp3");
 function playAlertSound() {
     alertSound.play();
 }
+    withdrawForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        showLoading();
 
-// Handle Withdraw Form Submit
-withdrawForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+        const amount = parseFloat(document.getElementById("amount").value);
+        const bankCode = document.getElementById("bank").value;
+        const accountNumber = document.getElementById("accountNumber").value;
 
-    const amount = parseFloat(document.getElementById("amount").value);
-    const bankCode = document.getElementById("bank").value;
-    const accountNumber = document.getElementById("accountNumber").value;
-
-    if (amount < 500) {
-        playAlertSound();
-        alert("Minimum withdrawal is ₦500.");
-        return;
-    }
-    if (amount > currentBalance) {
-        playAlertSound();
-        alert("Insufficient balance.");
-        return;
-    }
-
-    // Show loading animation
-    loadingElement.style.display = "block";
-
-    try {
-        // Verify Bank Account using Paystack
-        const accountName = await verifyBankAccount(accountNumber, bankCode);
-        const bankName = getBankName(bankCode);
-
-        // Confirm Transfer
-        playAlertSound();
-        const confirmTransfer = confirm(
-            `Are you sure you want to transfer ₦${amount} to ${accountName} ${bankName} - ${accountNumber}?`
-        );
-
-        if (!confirmTransfer) {
-            loadingElement.style.display = "none";
+        if (isNaN(amount) || amount < 500) {
+            alert("Minimum withdrawal amount is ₦500.");
+            hideLoading();
             return;
         }
 
-        // Show PIN Form for confirmation
-        pinForm.style.display = "block";
-        pinForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const pin = userPinInput.value;
+        const user = auth.currentUser;
+        if (!user) {
+            alert("User not authenticated.");
+            hideLoading();
+            return;
+        }
 
-            // Verify PIN from Firebase
-            const pinRef = ref(database, `users/${currentUserId}/transferP`);
-            get(pinRef).then(async (snapshot) => {
-                if (snapshot.exists()) {
-                    const storedPin = snapshot.val();
-                    if (storedPin === pin) {
-                        // Deduct 7% Fee
-                        const netAmount = amount - (amount * 0.07);
+        const userDetails = await fetchUserDetails(user.uid);
+        if (!userDetails || userDetails.userBalance < amount) {
+            alert("Insufficient balance.");
+            hideLoading();
+            return;
+        }
 
-                        // Process Transfer
-                        const transferSuccess = await processTransfer(accountNumber, bankCode, netAmount, accountName);
+        const userPin = prompt("Enter your 6-digit PIN");
+        if (!userPin || userPin !== userDetails.transferP) {
+            alert("Invalid PIN.");
+            hideLoading();
+            return;
+        }
 
-                        if (transferSuccess) {
-                            updateBalanceAndHistory(amount, accountName, accountNumber, bankCode);
-                            playAlertSound();
-                            alert("Withdrawal Successful!");
-                        } else {
-                            playAlertSound();
-                            alert("Transfer failed Network error, please try again later.");
-                        }
-                    } else {
-                        playAlertSound();
-                        alert("PIN is not correct.");
-                    }
-                } else {
-                    playAlertSound();
-                    alert("PIN not correct.");
-                }
+        const netAmount = amount - amount * 0.07;
+        try {
+            const secretKey = await fetchPaystackSecretKey();
+            const { accountName, bankName } = await verifyBankAccount(accountNumber, bankCode, secretKey);
+
+            const confirmTransfer = confirm(`Are you sure you want to transfer ₦${amount} to ${accountName} (${bankName} - ${accountNumber})?`);
+            if (!confirmTransfer) {
+                hideLoading();
+                return;
+            }
+
+            const transferResponse = await fetch("https://api.paystack.co/transfer", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${secretKey}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    source: "balance",
+                    amount: Math.round(netAmount * 100),
+                    recipient: accountNumber,
+                    reason: "Withdrawal from Fruit Wealth Farming",
+                }),
             });
+
+            const transferData = await transferResponse.json();
+            if (transferData.status) {
+                alert("Withdrawal completed successfully!");
+                saveTransactionHistory(user.uid, amount, bankName, accountName); // Save transaction history
+                hideLoading();
+                withdrawForm.reset();
+            } else {
+                alert("Transfer error. Please try again later.");
+                hideLoading();
+            }
+        } catch (error) {
+            alert(error.message);
+            hideLoading();
+        }
+    });
+
+    const fetchPaystackSecretKey = async () => {
+        const response = await fetch("/api/get-paystack-secret-key");
+        const data = await response.json();
+        return data.secretKey;
+    };
+
+    const verifyBankAccount = async (accountNumber, bankCode, secretKey) => {
+        const response = await fetch(`https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`, {
+            headers: { Authorization: `Bearer ${secretKey}` },
         });
+        const data = await response.json();
+        if (!data.status) throw new Error(data.message || "Invalid account details, check and try again.");
+        return { accountName: data.data.account_name, bankName: getBankName(bankCode) };
+    };
 
-    } catch (error) {
-        console.error(error);
-        playAlertSound();
-        alert("Error processing withdrawal. Please check details and try again.");
-    } finally {
-        loadingElement.style.display = "none";
-    }
-});
-
-// Verify Bank Account
-async function verifyBankAccount(accountNumber, bankCode) {
-    const response = await fetch(`https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`, {
-        headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
-    });
-    const data = await response.json();
-    if (!data.status) throw new Error(data.message || "Invalid account details, check and try again.");
-    return data.data.account_name;
-}
-
-// Process Transfer
-async function processTransfer(accountNumber, bankCode, amount, accountName) {
-    const response = await fetch("https://api.paystack.co/transfer", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            source: "balance",
-            amount: Math.round(amount * 100), 
-            recipient: {
-                type: "nuban",
-                name: accountName,
-                account_number: accountNumber,
-                bank_code: bankCode,
-                currency: "NGN",
-            },
-        }),
-    });
-    const data = await response.json();
-    return data.status;
-}
-
-// Update Balance and History
-function updateBalanceAndHistory(amount, accountName, accountNumber, bankCode) {
-    const newBalance = currentBalance - amount;
-    const userRef = ref(database, `users/${currentUserId}`);
-
-    update(userRef, { userBalance: newBalance });
-
-    const historyRef = ref(database, `users/${currentUserId}/historyWithdrawal`);
-    push(historyRef, {
-        amount: amount.toFixed(2),
-        bankName: getBankName(bankCode),
-        accountNumber,
-        accountName,
-        date: new Date().toLocaleString(),
-    });
-
-    userBalanceElement.textContent = newBalance.toFixed(2);
-    loadWithdrawalHistory();
-}
-
-// Get Bank Name from Code
-function getBankName(code) {
-    const banks = {
-        "058": "GTBank",
+    const getBankName = (code) => {
+        const banks = {
+             "058": "GTBank",
         "044": "Access Bank",
         "035": "Wema Bank",
         "585": "OPay",
@@ -618,10 +581,28 @@ function getBankName(code) {
     "501": "FSDH Merchant Bank Limited",
     "50211": "Kuda Bank",
         "303": "Lotus Bank",
-        "125": "Rubies MFB"
+        "125": "Rubies MFB", 
+        };
+        return banks[code] || "Unknown Bank";
     };
-    return banks[code] || "Unknown Bank";
-}
-</script>
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            fetchUserDetails(user.uid);
+            // Fetch and display transaction history
+            const transactionsRef = ref(db, `transactions/${user.uid}`);
+            get(transactionsRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    displayTransactionHistory(Object.values(snapshot.val()));
+                } else {
+                    historyContainer.innerHTML = "<p>No withdrawal history.</p>";
+                }
+            });
+        } else {
+            alert("Please log in to continue.");
+       hideLoading();   
+        }
+    });
+</script>    
 </body>
 </html>
