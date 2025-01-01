@@ -482,83 +482,88 @@ toggleHistoryBtn.addEventListener("click", () => {
         if (!data.status) throw new Error(data.message || "Invalid account details.");
         return { accountName: data.data.account_name, bankName: getBankName(bankCode) };
     };
+            
+    // Cire kuɗi (withdrawal) tare da Paystack Customer ID
+withdrawForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showLoading();
 
-    // Withdrawal Form Submission
-    withdrawForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        showLoading();
+    const amount = parseFloat(document.getElementById("amount").value);
+    const bankCode = document.getElementById("bank").value;
+    const accountNumber = document.getElementById("accountNumber").value;
 
-        const amount = parseFloat(document.getElementById("amount").value);
-        const bankCode = document.getElementById("bank").value;
-        const accountNumber = document.getElementById("accountNumber").value;
+    if (isNaN(amount) || amount < 500) {
+        alert("Minimum withdrawal amount is ₦500.");
+        hideLoading();
+        return;
+    }
 
-        if (isNaN(amount) || amount < 500) {
-            alert("Minimum withdrawal amount is ₦500.");
+    const user = auth.currentUser;
+    if (!user) {
+        alert("User not authenticated.");
+        hideLoading();
+        return;
+    }
+
+    const userDetails = await fetchUserDetails(user.uid);
+    if (!userDetails || userDetails.userBalance < amount) {
+        alert("Insufficient balance.");
+        hideLoading();
+        return;
+    }
+    
+    if (!userDetails.paystackCustomerId) {
+        alert("Paystack Customer ID not found. Please contact support.");
+        hideLoading();
+        return;
+    }
+
+    try {
+        const { accountName, bankName } = await verifyBankAccount(accountNumber, bankCode);
+
+        const confirmTransfer = confirm(`Are you sure you want to transfer ₦${amount} to ${accountName} (${bankName} - ${accountNumber})?`);
+        if (!confirmTransfer) {
             hideLoading();
             return;
         }
 
-        const user = auth.currentUser;
-        if (!user) {
-            alert("User not authenticated.");
+        const userPin = prompt("Enter your 5-digit Transfer PIN");
+        if (!userPin || userPin !== userDetails.transferP) {
+            alert("Invalid PIN.");
             hideLoading();
             return;
         }
 
-        const userDetails = await fetchUserDetails(user.uid);
-        if (!userDetails || userDetails.userBalance < amount) {
-            alert("Insufficient balance.");
-            hideLoading();
-            return;
+        const netAmount = amount - amount * 0.07; 
+        
+        const transferResponse = await fetch("https://api.paystack.co/transfer", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                source: "balance",
+                amount: Math.round(netAmount * 100),    
+                    recipient: userDetails.paystackCustomerId,
+                reason: "Withdrawal from Fruit Wealth Farming",
+            }),
+        });
+
+        const transferData = await transferResponse.json();
+        if (transferData.status) {
+            saveTransactionHistory(user.uid, amount, bankName, accountName, transferData.data.reference);
+            alert("Withdrawal complete successfully! Waiting for confirmation...");
+        } else {
+            alert("Transfer error. Please try again later.");
         }
-
-        try {
-            const { accountName, bankName } = await verifyBankAccount(accountNumber, bankCode);
-
-            const confirmTransfer = confirm(`Are you sure you want to transfer ₦${amount} to ${accountName} (${bankName} - ${accountNumber})?`);
-            if (!confirmTransfer) {
-                hideLoading();
-                return;
-            }
-
-            const userPin = prompt("Enter your 5-digit Transfer PIN");
-            if (!userPin || userPin !== userDetails.transferP) {
-                alert("Invalid PIN.");
-                hideLoading();
-                return;
-            }
-
-            const netAmount = amount - amount * 0.07; 
-            const recipientCode = `RCP-${Date.now()}`; 
-
-            const transferResponse = await fetch("https://api.paystack.co/transfer", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    source: "balance",
-                    amount: Math.round(netAmount * 100),
-                    recipient: recipientCode,
-                    reason: "Withdrawal from Fruit Wealth Farming",
-                }),
-            });
-
-            const transferData = await transferResponse.json();
-            if (transferData.status) {
-                saveTransactionHistory(user.uid, amount, bankName, accountName, transferData.data.reference);
-                alert("Withdrawal Complete successfully! Waiting for confirmation...");
-            } else {
-                alert("Transfer error. Please try again later.");
-            }
-            hideLoading();
-        } catch (error) {
-            alert(error.message);
-            hideLoading();
-        }
-    });
-
+        hideLoading();
+    } catch (error) {
+        alert(error.message);
+        hideLoading();
+    }
+});
+           
   // Map Bank Code to Bank Name
     const getBankName = (code) => {
         const banks = {
