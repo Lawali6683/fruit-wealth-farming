@@ -38,7 +38,6 @@ function validatePaystackSignature(req, signature) {
   return hash === signature;
 }
 
-// Verify payment using Paystack
 async function verifyPayment(transactionReference) {
   try {
     const response = await fetch(
@@ -52,14 +51,17 @@ async function verifyPayment(transactionReference) {
     );
 
     const data = await response.json();
-    return data.status && data.data.status === 'success' ? data.data : null;
+    if (!data.status) {
+      console.error('Payment verification failed:', data.message);
+      return null;
+    }
+    return data.data.status === 'success' ? data.data : null;
   } catch (error) {
     console.error('Error verifying payment:', error.message);
     return null;
   }
 }
 
-// Verify withdrawal using Paystack Transfer Verification API
 async function verifyWithdrawal(reference) {
   try {
     const response = await fetch(`https://api.paystack.co/transfer/verify/${reference}`, {
@@ -70,7 +72,11 @@ async function verifyWithdrawal(reference) {
     });
 
     const data = await response.json();
-    return data.status && data.data.status === 'success' ? data.data : null;
+    if (!data.status) {
+      console.error('Withdrawal verification failed:', data.message);
+      return null;
+    }
+    return data.data.status === 'success' ? data.data : null;
   } catch (error) {
     console.error('Error verifying withdrawal:', error.message);
     return null;
