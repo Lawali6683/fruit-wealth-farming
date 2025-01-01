@@ -147,10 +147,46 @@ footer {
     margin-top: 40px;
 }
 
+/* Loading Screen */
+#loadingScreen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#loadingScreen span {
+    animation: spin 1s linear infinite;
+    border: 7px solid white;
+    border-top: 7px solid #00796B;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
   </style>    
 </head>
 <body>
-  
+  <div id="loadingScreen">
+        <span></span>        
+    </div>
   <header>
         <div class="logo">
             <img src="fruit.png" alt="Fruit Wealth Farming Logo">
@@ -450,7 +486,7 @@ const loadUserData = async (userId) => {
       dailyUpgrade = userData.dailyUpgrade || 0;
       timeLeft = Math.max(0, Math.floor((userData["24hours"] - Date.now()) / 1000));
          const fullName = userData.fullName || "User"; 
-      userFullNameElement.textContent = fullName; // Display full name
+      userFullNameElement.textContent = fullName; 
        
       if (dailyUpgrade > 0 && timeLeft === 0) {
         collectIncomeBtn.classList.remove("hidden");
@@ -488,6 +524,16 @@ collectIncomeBtn.addEventListener("click", async () => {
     await collectDailyIncome(user.uid);
   }
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const loadingScreen = document.getElementById("loadingScreen");
+    loadingScreen.style.display = "flex"; 
+    setTimeout(() => {
+        loadingScreen.style.display = "none"; 
+    }, 4000); 
+    
+});
+
 </script>         
 </body>
 </html>
