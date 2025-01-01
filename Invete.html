@@ -310,9 +310,48 @@ main {
         Text-align: center;
         Font-weight:bold;
     }
+    
+    /* Loading Screen */
+#loadingScreen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#loadingScreen span {
+    animation: spin 1s linear infinite;
+    border: 7px solid white;
+    border-top: 7px solid #00796B;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+
   </style>
 </head>
 <body>
+    <div id="loadingScreen">
+        <span></span>        
+    </div>
   <div class="container">
     <h1>Referral and Bonus Program</h1>
     <p class="ghk">Invite your referrals to join and earn amazing bonuses! Here's how it works:</p>
@@ -501,9 +540,7 @@ main {
 } else {
     referralLinkEl.value = "Referral link not available."; 
 }
-
-     
-        
+             
         // Display user full name
         userFullNameEl.textContent = fullName;
 
@@ -608,6 +645,15 @@ main {
         console.error("Failed to copy link:", err);
         alert("An error occurred while copying the link. Please try again.");
     });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const loadingScreen = document.getElementById("loadingScreen");
+    loadingScreen.style.display = "flex"; 
+    setTimeout(() => {
+        loadingScreen.style.display = "none"; 
+    }, 3000); 
+    
 });
 
 </script>
