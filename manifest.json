@@ -1,7 +1,7 @@
 {
   "name": "Fruit Wealth Farming",
   "short_name": "FWF",
-  "start_url": "/",
+  "start_url": "login.html",
   "display": "standalone",
   "background_color": "#47498e",
   "theme_color": "#5bff15",
