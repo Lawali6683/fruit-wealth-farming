@@ -12,14 +12,14 @@ if (!admin.apps.length) {
 
   let parsedSDK;
   try {
-    parsedSDK = JSON.parse(firebaseAdminSDK);  // Parse the JSON string to an object
+    parsedSDK = JSON.parse(firebaseAdminSDK);
   } catch (error) {
     throw new Error("Invalid JSON in FIREBASE_ADMIN_SDK");
   }
 
   admin.initializeApp({
     credential: admin.credential.cert(parsedSDK),
-    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",  // Update your Firebase database URL
+    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
   });
 }
 
@@ -38,7 +38,7 @@ function validatePaystackSignature(req, signature) {
   return hash === signature;
 }
 
-// Verify payment
+// Verify payment using Paystack
 async function verifyPayment(transactionReference) {
   try {
     const response = await fetch(
@@ -52,11 +52,27 @@ async function verifyPayment(transactionReference) {
     );
 
     const data = await response.json();
-    console.log('Verification Response:', data);
-
     return data.status && data.data.status === 'success' ? data.data : null;
   } catch (error) {
     console.error('Error verifying payment:', error.message);
+    return null;
+  }
+}
+
+// Verify withdrawal using Paystack Transfer Verification API
+async function verifyWithdrawal(reference) {
+  try {
+    const response = await fetch(`https://api.paystack.co/transfer/verify/${reference}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+      },
+    });
+
+    const data = await response.json();
+    return data.status && data.data.status === 'success' ? data.data : null;
+  } catch (error) {
+    console.error('Error verifying withdrawal:', error.message);
     return null;
   }
 }
@@ -73,14 +89,13 @@ export default async function handler(req, res) {
 
   const signature = req.headers['x-paystack-signature'];
   if (!validatePaystackSignature(req, signature)) {
-    console.error('Invalid Signature');
     return res.status(400).send('Invalid signature.');
   }
 
-  console.log('Webhook Received:', req.body);
   const { event, data } = req.body;
 
   if (event === 'charge.success') {
+    // Handle deposit (add to investment)
     try {
       const transactionDetails = await verifyPayment(data.reference);
 
@@ -89,72 +104,60 @@ export default async function handler(req, res) {
         const userUid = await getUserUidByEmail(email);
 
         if (userUid) {
-          const alreadyProcessed = await checkTransactionProcessed(
-            userUid,
-            transactionDetails.reference
-          );
+          const alreadyProcessed = await checkTransactionProcessed(userUid, transactionDetails.reference);
 
           if (alreadyProcessed) {
-            console.warn('Transaction already processed:', data.reference);
             return res.status(400).send('Transaction already processed.');
           }
 
           const investmentAmount = transactionDetails.amount / 100;
           await updateInvestment(userUid, investmentAmount, transactionDetails.reference);
-          console.log('Investment updated successfully');
           return res.status(200).send('Payment verified and investment updated.');
         } else {
-          console.warn('User not found for email:', email);
           return res.status(400).send('User not found.');
         }
       } else {
-        console.error('Payment verification failed for reference:', data.reference);
         return res.status(400).send('Payment verification failed.');
       }
     } catch (error) {
-      console.error('Error processing webhook:', error.message);
+      console.error('Error processing deposit:', error.message);
       return res.status(500).send('Internal Server Error.');
     }
-  } else if (event === 'withdrawal.success' || event === 'withdrawal.failed') {
+  } else if (event === 'withdrawal.success') {
+    // Handle withdrawal (deduct from userBalance)
     try {
-      const transactionDetails = await verifyPayment(data.reference);
+      const withdrawalDetails = await verifyWithdrawal(data.reference);
 
-      if (transactionDetails) {
-        const { email } = transactionDetails.customer;
+      if (withdrawalDetails) {
+        const { email } = withdrawalDetails.recipient;
         const userUid = await getUserUidByEmail(email);
 
         if (userUid) {
-          const withdrawalAmount = transactionDetails.amount / 100; // Convert to Naira
-
           const userRef = db.ref(`users/${userUid}`);
           const userSnapshot = await userRef.once('value');
           const userData = userSnapshot.val();
 
-          if (event === 'withdrawal.success') {
-            // Update user balance if successful withdrawal
+          const withdrawalAmount = withdrawalDetails.amount / 100;
+          if (userData.userBalance >= withdrawalAmount) {
             await userRef.update({
               userBalance: userData.userBalance - withdrawalAmount,
               lastWithdrawalStatus: 'Success',
             });
             return res.status(200).send('Withdrawal success.');
-          } else if (event === 'withdrawal.failed') {
-            // Mark the withdrawal as failed
-            await userRef.update({
-              lastWithdrawalStatus: 'Failed',
-            });
-            return res.status(200).send('Withdrawal failed.');
+          } else {
+            return res.status(400).send('Insufficient balance.');
           }
         } else {
           return res.status(400).send('User not found.');
         }
       } else {
-        return res.status(400).send('Payment verification failed.');
+        return res.status(400).send('Withdrawal verification failed.');
       }
     } catch (error) {
-      return res.status(500).send('Error on server side.');
+      console.error('Error processing withdrawal:', error.message);
+      return res.status(500).send('Internal Server Error.');
     }
   } else {
-    console.warn('Invalid event type:', event);
     return res.status(400).send('Invalid event.');
   }
 }
