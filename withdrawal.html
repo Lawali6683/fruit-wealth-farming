@@ -400,10 +400,14 @@ toggleHistoryBtn.addEventListener("click", () => {
     const withdrawForm = document.getElementById("withdrawForm");
     const loadingScreen = document.getElementById("loadingScreen");
     const historyContainer = document.getElementById("historyContainer");
+    
+    
 
-    // Loading Screen Handlers
-    const showLoading = () => (loadingScreen.style.display = "flex");
-    const hideLoading = () => (loadingScreen.style.display = "none");
+const showLoading = () => (loadingScreen.style.display = "flex");
+const hideLoading = () => (loadingScreen.style.display = "none");
+
+ window.onload = () => hideLoading();
+    
 
     // Fetch Paystack Secret Key
     let PAYSTACK_SECRET_KEY = "";
@@ -613,7 +617,7 @@ toggleHistoryBtn.addEventListener("click", () => {
             hideLoading();
         }
     });
-
+  
     document.addEventListener("DOMContentLoaded", () => {
     const loadingScreen = document.getElementById("loadingScreen");
     loadingScreen.style.display = "flex"; 
