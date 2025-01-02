@@ -472,18 +472,7 @@ toggleHistoryBtn.addEventListener("click", () => {
         });
     };
 
-
-    // Verify Bank Account
-    const verifyBankAccount = async (accountNumber, bankCode) => {
-        const response = await fetch(`https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`, {
-            headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
-        });
-        const data = await response.json();
-        if (!data.status) throw new Error(data.message || "Invalid account details.");
-        return { accountName: data.data.account_name, bankName: getBankName(bankCode) };
-    };
-            
-    // Cire kuɗi (withdrawal) tare da Paystack Customer ID
+    // Withdrawal Form Submission
 withdrawForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     showLoading();
@@ -511,22 +500,26 @@ withdrawForm.addEventListener("submit", async (e) => {
         hideLoading();
         return;
     }
-    
-    if (!userDetails.paystackCustomerId) {
-        alert("Paystack Customer ID not found. Please contact support.");
-        hideLoading();
-        return;
-    }
 
-    try {
+    try {       
         const { accountName, bankName } = await verifyBankAccount(accountNumber, bankCode);
 
-        const confirmTransfer = confirm(`Are you sure you want to transfer ₦${amount} to ${accountName} (${bankName} - ${accountNumber})?`);
+        let recipientCode = userDetails.recipient;
+        if (!recipientCode) {           
+            recipientCode = await createRecipient(accountNumber, bankCode, accountName, userDetails.email);
+
+            // Save recipient to Firebase
+            const userRef = ref(db, `users/${user.uid}`);
+            await update(userRef, { recipient: recipientCode });
+        }
+
+        const confirmTransfer = confirm(`Are you sure you want to transfer ₦${amount} to ${accountName} ${bankName} - ${accountNumber}?`);
         if (!confirmTransfer) {
             hideLoading();
             return;
         }
 
+        // Verify Transfer PIN
         const userPin = prompt("Enter your 5-digit Transfer PIN");
         if (!userPin || userPin !== userDetails.transferP) {
             alert("Invalid PIN.");
@@ -534,8 +527,10 @@ withdrawForm.addEventListener("submit", async (e) => {
             return;
         }
 
-        const netAmount = amount - amount * 0.07; 
-        
+        // Calculate Net Amount
+        const netAmount = amount - amount * 0.07;
+
+        // Initiate Transfer
         const transferResponse = await fetch("https://api.paystack.co/transfer", {
             method: "POST",
             headers: {
@@ -544,33 +539,67 @@ withdrawForm.addEventListener("submit", async (e) => {
             },
             body: JSON.stringify({
                 source: "balance",
-                amount: Math.round(netAmount * 100),    
-                    recipient: userDetails.paystackCustomerId,
-                reason: "Withdrawal from Fruit Wealth Farming",
+                amount: Math.round(netAmount * 100),
+                recipient: recipientCode,
+                reason: "Withdrawal from Fruit Wealth Farming Company",
             }),
         });
 
         const transferData = await transferResponse.json();
         if (transferData.status) {
+            // Save Transaction History
             saveTransactionHistory(user.uid, amount, bankName, accountName, transferData.data.reference);
-            alert("Withdrawal complete successfully! Waiting for confirmation...");
+            alert("Withdrawal completed successfully!");
         } else {
-            alert("Transfer error. Please try again later.");
+            alert(`Transfer failed: ${transferData.message}`);
         }
-        hideLoading();
     } catch (error) {
-        alert(error.message);
+        alert(`Error: ${error.message}`);
+    } finally {
         hideLoading();
     }
 });
-           
+
+// Create Paystack Recipient
+const createRecipient = async (accountNumber, bankCode, accountName, customerEmail) => {
+    const response = await fetch("https://api.paystack.co/transferrecipient", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            type: "nuban",
+            name: accountName,
+            account_number: accountNumber,
+            bank_code: bankCode,
+            currency: "NGN",
+            email: customerEmail,
+        }),
+    });
+
+    const data = await response.json();
+    if (!data.status) throw new Error(data.message || "Failed to create recipient.");
+    return data.data.recipient_code;
+};
+
+// Verify Bank Account
+const verifyBankAccount = async (accountNumber, bankCode) => {
+    const response = await fetch(`https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`, {
+        headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` },
+    });
+    const data = await response.json();
+    if (!data.status) throw new Error(data.message || "Invalid account details.");
+    return { accountName: data.data.account_name, bankName: getBankName(bankCode) };
+};
+          
   // Map Bank Code to Bank Name
     const getBankName = (code) => {
         const banks = {
             "058": "GTBank",
         "044": "Access Bank",
         "035": "Wema Bank",
-        "585": "OPay",
+        "100004": "Paycom (OPay)",        
         "050": "Ecobank",
         "070": "Fidelity Bank",
         "011": "First Bank",
