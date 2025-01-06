@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Fruit Wealth Farming</title>
+    <style>        
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #444;
+}
+
+/* Loading Screen */
+#loadingScreen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* Forms */
+form {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #218838;
+}
+
+/* Admin Panel */
+#adminPanel {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+
+.withdrawal-stats {    
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.withdrawal-stats p {
+    margin: 0;
+    color: #007bff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table th, table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid blue;
+    font-size: 10px;
+}
+
+table th {
+    background-color: #007bff;
+    color: white;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Buttons */
+.approve-btn {
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.approve-btn:hover {
+    background-color: #218838;
+}
+
+.reject-btn {
+    padding: 5px 10px;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.reject-btn:hover {
+    background-color: #c82333;
+}
+
+.confirm-all-btn {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+}
+
+.confirm-all-btn:hover {
+    background-color: #0056b3;
+}
+h1{
+    Font-size: 24px;
+    Color: green;
+    background: #ffffff;
+    
+}
+    </style>    
+</head>
+<body>
+     <div id="loadingScreen">Loading...</div>  
+    <div id="loginForm">
+        <h2>Admin Login</h2>
+        <form>
+            <label for="email">Email:</label>
+            <input type="email" id="email" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+   
+    <div id="secondaryPasswordForm" style="display: none;">
+        <h2>Admin Verification</h2>
+        <form>
+            <label for="secondaryPassword">Enter Admin Password:</label>
+            <input type="password" id="secondaryPassword" required>
+            <button type="submit">Verify</button>
+        </form>
+    </div>        
+    <div id="adminPanel" style="display: none;">
+        <h1 id="welcomeAdmin">Welcome, Admin</h1>
+        
+        <div class="withdrawal-stats">
+            <p id="totalRequirements">Total Withdrawal Requests: 0</p>
+            
+            <p id="totalAmount">Total Amount: ₦0.00</p>
+        </div>
+
+      <div>
+<button id="confirmAllButton" class="confirm-all-btn">Confirm All Pending Withdrawals</button>
+</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Amount</th>
+                    <th>Net Amount</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Account Number</th>
+                    <th>Bank Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="adminPendingWithdrawals">
+                <tr>
+                    <td colspan="8">No pending withdrawals</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script type="module">
+   // Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBtwsxKGlpX-ofm-yE4o6_5FNYyKFy7X7w",
+    authDomain: "fruit-wealth-farming.firebaseapp.com",
+    databaseURL: "https://fruit-wealth-farming-default-rtdb.firebaseio.com",
+    projectId: "fruit-wealth-farming",
+    storageBucket: "fruit-wealth-farming.appspot.com",
+    messagingSenderId: "417203511096",
+    appId: "1:417203511096:web:1ecaca3d0a705a8c16ebcd",
+    measurementId: "G-BZFLHB4KM2",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// DOM Elements
+const loginForm = document.getElementById("loginForm");
+const secondaryPasswordForm = document.getElementById("secondaryPasswordForm");
+const adminPanel = document.getElementById("adminPanel");
+const pendingTable = document.getElementById("adminPendingWithdrawals");
+const totalRequirements = document.getElementById("totalRequirements");
+const totalAmount = document.getElementById("totalAmount");
+const welcomeAdmin = document.getElementById("welcomeAdmin");
+const loadingScreen = document.getElementById("loadingScreen");
+
+// Helper Functions
+const showLoading = () => (loadingScreen.style.display = "flex");
+const hideLoading = () => (loadingScreen.style.display = "none");
+const showError = (message) => alert(message);
+
+// Admin Emails
+const allowedEmails = [
+    "fruitwealthfarming@gmail.com",
+    "harunalawali5522@gmail.com",
+    "lawaliharuna943@gmail.com"
+];
+
+// Login Handler
+loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showLoading();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    document.getElementById("confirmAllButton").addEventListener("click", approveAllWithdrawals);
+
+    if (!allowedEmails.includes(email)) {
+        showError("Unauthorized email address.");
+        hideLoading();
+        return;
+    }
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        hideLoading();
+        loginForm.style.display = "none";
+        secondaryPasswordForm.style.display = "block";
+    } catch (error) {
+        showError("Invalid email or password.");
+        hideLoading();
+    }
+});
+
+// Secondary Password Verification
+secondaryPasswordForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showLoading();
+    const secondaryPassword = document.getElementById("secondaryPassword").value;
+    const userID = auth.currentUser.uid;
+
+    try {
+        const userRef = ref(db, `users/${userID}`);
+        const snapshot = await get(userRef);
+        const userData = snapshot.val();
+
+        if (userData.secondaryPassword === secondaryPassword) {
+            welcomeAdmin.textContent = `Welcome Admin, ${userData.fullName}`;
+            secondaryPasswordForm.style.display = "none";
+            adminPanel.style.display = "block";
+            fetchPendingWithdrawals();
+        } else {
+            showError("Invalid secondary password.");
+        }
+    } catch (error) {
+        showError("Error verifying secondary password.");
+    }
+    hideLoading();
+});
+
+// Fetch Pending Withdrawals
+const fetchPendingWithdrawals = async () => {
+    showLoading();
+    const pendingRef = ref(db, "withdrawals/pending");
+    const snapshot = await get(pendingRef);
+
+    pendingTable.innerHTML = "";
+    let totalAmountSum = 0;
+    let totalRequests = 0;
+
+    if (snapshot.exists()) {
+        const pendingData = snapshot.val();
+        for (const id in pendingData) {
+            const item = pendingData[id];
+            totalRequests++;
+            totalAmountSum += item.netAmount;
+
+            const row = `
+                <tr>
+                    <td>${item.userID}</td>
+                    <td>₦${item.amount.toFixed(2)}</td>
+                    <td>₦${item.netAmount.toFixed(2)}</td>
+                    <td>${item.fullName}</td>
+                    <td>${item.email}</td>
+                    <td>${item.accountNumber}</td>
+                    <td>${item.bankName}</td>
+                    <td>
+                        <button class="approve-btn" onclick="approveWithdrawal('${id}', '${item.userID}', ${item.netAmount}, '${item.accountNumber}', '${item.bankCode}')">Approve</button>
+                        <button class="reject-btn" onclick="rejectWithdrawal('${id}')">Reject</button>
+                    </td>
+                </tr>
+            `;
+            pendingTable.innerHTML += row;
+        }
+    } else {
+        pendingTable.innerHTML = "<tr><td colspan='8'>No pending withdrawals</td></tr>";
+    }
+
+    totalRequirements.textContent = `Total Withdrawal Requests: ${totalRequests}`;
+    totalAmount.textContent = `Total Amount: ₦${totalAmountSum.toFixed(2)}`;
+    hideLoading();
+};
+
+// Approve Withdrawal
+const approveWithdrawal = async (id, userID, netAmount, accountNumber, bankCode) => {
+    showLoading();
+
+    try {
+        const secretKey = await fetchPaystackSecretKey();
+
+        const response = await fetch(`https://api.paystack.co/transfer`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${secretKey}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                source: "balance",
+                amount: Math.round(netAmount * 100), // Paystack requires amount in kobo
+                recipient: accountNumber,
+                bank_code: bankCode,
+                reason: "Withdrawal from Fruit Wealth Farming",
+            }),
+        });
+
+        const data = await response.json();
+
+        if (data.status) {
+            const successfulRef = ref(db, `withdrawals/successful/${id}`);
+            await update(successfulRef, {
+                status: "successful",
+                date: new Date().toISOString(),
+                transactionDetails: data.data,
+            });
+
+            const pendingRef = ref(db, `withdrawals/pending/${id}`);
+            await remove(pendingRef);
+
+            alert("Withdrawal approved and processed successfully!");
+            fetchPendingWithdrawals();
+        } else {
+            throw new Error(data.message || "Error processing payment");
+        }
+    } catch (error) {
+        showError(`Error: ${error.message}`);
+    }
+    hideLoading();
+};
+
+// Reject Withdrawal
+const rejectWithdrawal = async (id) => {
+    showLoading();
+
+    try {
+        const withdrawalRef = ref(db, `withdrawals/pending/${id}`);
+        await remove(withdrawalRef);
+
+        alert("Withdrawal rejected.");
+        fetchPendingWithdrawals();
+    } catch (error) {
+        showError(`Error: ${error.message}`);
+    }
+
+    hideLoading();
+};
+
+
+
+// Approve All Pending Withdrawals
+const approveAllWithdrawals = async () => {
+    showLoading();
+
+    try {
+        const secretKey = await fetchPaystackSecretKey();
+        const pendingRef = ref(db, "withdrawals/pending");
+        const snapshot = await get(pendingRef);
+
+        if (snapshot.exists()) {
+            const pendingData = snapshot.val();
+            const promises = [];
+
+            for (const id in pendingData) {
+                const item = pendingData[id];
+
+                // Send withdrawal request to Paystack
+                const response = await fetch(`https://api.paystack.co/transfer`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${secretKey}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        source: "balance",
+                        amount: Math.round(item.netAmount * 100), // Convert to kobo
+                        recipient: item.accountNumber,
+                        bank_code: item.bankCode,
+                        reason: `Withdrawal from Fruit Wealth Farming`,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.status) {
+                    // If successful, update the withdrawal in Firebase
+                    const successfulRef = ref(db, `withdrawals/successful/${id}`);
+                    const pendingRefItem = ref(db, `withdrawals/pending/${id}`);
+
+                    promises.push(
+                        update(successfulRef, {
+                            status: "successful",
+                            date: new Date().toISOString(),
+                            transactionDetails: data.data, // Include Paystack response
+                        }),
+                        remove(pendingRefItem)
+                    );
+                } else {
+                    console.error(`Failed to process withdrawal for ${item.fullName}: ${data.message}`);
+                }
+            }
+
+            // Wait for all updates to complete
+            await Promise.all(promises);
+
+            alert("All pending withdrawals processed successfully!");
+        } else {
+            alert("No pending withdrawals to process.");
+        }
+    } catch (error) {
+        showError(`Error: ${error.message}`);
+    }
+
+    hideLoading();
+};
+
+// Add event listener to the button
+
+
+
+// Fetch Paystack Secret Key
+const fetchPaystackSecretKey = async () => {
+    try {
+        const response = await fetch("/api/get-paystack-secret-key");
+        if (!response.ok) throw new Error("Failed to fetch Paystack secret key");
+        const data = await response.json();
+        return data.secretKey;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Error fetching Paystack secret key.");
+    }
+};
+document.addEventListener("DOMContentLoaded", () => {
+    const loadingScreen = document.getElementById("loadingScreen");
+    loadingScreen.style.display = "flex"; 
+    setTimeout(() => {
+        loadingScreen.style.display = "none"; 
+    }, 1000); 
+    
+});
+     
+    </script>
+</body>
+</html>
