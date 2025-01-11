@@ -24,15 +24,16 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const UFITPAY_API_KEY = process.env.UFITPAY_API_KEY;
+const UFITPAY_API_TOKEN = process.env.UFITPAY_API_TOKEN;
 
-if (!PAYSTACK_SECRET_KEY) {
-  throw new Error("PAYSTACK_SECRET_KEY environment variable is not set");
+if (!UFITPAY_API_KEY || !UFITPAY_API_TOKEN) {
+  throw new Error("UfitPay API credentials not found.");
 }
 
-// Validate Paystack signature
-function validatePaystackSignature(req, signature) {
-  const hash = createHmac('sha512', PAYSTACK_SECRET_KEY)
+// Validate UfitPay signature (Note: Adjust as needed based on UfitPay's signature scheme)
+function validateUfitpaySignature(req, signature) {
+  const hash = createHmac('sha512', UFITPAY_API_KEY)
     .update(JSON.stringify(req.body))
     .digest('hex');
   return hash === signature;
@@ -41,11 +42,12 @@ function validatePaystackSignature(req, signature) {
 async function verifyPayment(transactionReference) {
   try {
     const response = await fetch(
-      `https://api.paystack.co/transaction/verify/${transactionReference}`,
+      `https://api.ufitpay.com/v1/transaction/verify/${transactionReference}`,
       {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          "Api-Key": UFITPAY_API_KEY,
+          "Api-Token": UFITPAY_API_TOKEN,
         },
       }
     );
@@ -64,10 +66,11 @@ async function verifyPayment(transactionReference) {
 
 async function verifyWithdrawal(reference) {
   try {
-    const response = await fetch(`https://api.paystack.co/transfer/verify/${reference}`, {
+    const response = await fetch(`https://api.ufitpay.com/v1/withdrawal/verify/${reference}`, {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        "Api-Key": UFITPAY_API_KEY,
+        "Api-Token": UFITPAY_API_TOKEN,
       },
     });
 
@@ -89,12 +92,12 @@ export default async function handler(req, res) {
     return res.status(405).send('Method Not Allowed.');
   }
 
-  if (!req.body || !req.headers['x-paystack-signature']) {
+  if (!req.body || !req.headers['x-ufitpay-signature']) {
     return res.status(400).send('Invalid Request.');
   }
 
-  const signature = req.headers['x-paystack-signature'];
-  if (!validatePaystackSignature(req, signature)) {
+  const signature = req.headers['x-ufitpay-signature'];
+  if (!validateUfitpaySignature(req, signature)) {
     return res.status(400).send('Invalid signature.');
   }
 
