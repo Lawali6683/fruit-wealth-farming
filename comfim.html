@@ -407,13 +407,13 @@ const approveAllWithdrawals = async () => {
             for (const id in pendingData) {
                 const item = pendingData[id];
                 const transferPayload = {
-                    amount: item.netAmount, // Amount in Naira
+                    amount: item.netAmount, 
                     recipient_account: item.accountNumber,
                     recipient_bank: item.bankCode,
                     narration: "Withdrawal from Fruit Wealth Farming",
                 };
 
-                const transferResponse = await fetch("https://api.unfitpay.com/transfer", {
+                const transferResponse = await fetch("https://api.ufitpay.com/v1/bank_transfer", {
                     method: "POST",
                     headers: {
                         Authorization: `Bearer ${apiKey}`,
@@ -458,14 +458,14 @@ approveAllButton.addEventListener("click", approveAllWithdrawals);
 
 
 // Approve Withdrawal
-const approveWithdrawal = async (id, netAmount, accountNumber, bankName) => {
+const approveWithdrawal = async (id, netAmount, accountNumber, bankCode) => {
     showLoading();
 
     try {
         const apiKey = await fetchUnfitpayAPIKey();
         const apiToken = await fetchUnfitpayAPIToken();
 
-        const response = await fetch("https://api.unfitpay.com/transfer", {
+        const response = await fetch("https://api.ufitpay.com/v1/bank_transfer", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${apiToken}`,
@@ -474,7 +474,7 @@ const approveWithdrawal = async (id, netAmount, accountNumber, bankName) => {
             body: JSON.stringify({
                 amount: netAmount,
                 recipient_account: accountNumber,
-                recipient_bank: bankName,
+                recipient_bank: bankCode,
                 narration: "Withdrawal from Fruit Wealth Farming",
             }),
         });
