@@ -14,10 +14,8 @@ const db = admin.database();
 const apiKey = process.env.UFITPAY_API_KEY;
 const apiToken = process.env.UFITPAY_API_TOKEN;
 
-db.ref("users").on("child_added", async (snapshot) => {
-    const userId = snapshot.key;
-    const userData = snapshot.val();
-
+// Fetch users and create virtual accounts if needed
+const processUser = async (userId, userData) => {
     if (userData.accountDetails) {
         console.log(`Account already exists for user ${userId}`);
         return;
@@ -31,7 +29,7 @@ db.ref("users").on("child_added", async (snapshot) => {
             phone_number: userData.phoneNumber || "0000000000",
         };
 
-        const customerResponse = await fetch(
+        const customerResponse = await fetchWithRetry(
             "https://api.ufitpay.com/v1/create_customer",
             {
                 method: "POST",
@@ -44,23 +42,18 @@ db.ref("users").on("child_added", async (snapshot) => {
             }
         );
 
-        const customerData = await customerResponse.json();
-
-        if (!customerResponse.ok) {
-            console.error(`Failed to create customer for user ${userId}:`, customerData);
-            return;
-        }
+        const customerData = await customerResponse;
 
         // Create virtual account for Wema Bank
         const virtualAccountRequestData = {
             customer_id: customerData.customer_id,
-            bank_name: "Wema Bank", 
-            currency: "NGN", 
-            reference_id: `${userId}-${Date.now()}`, 
+            bank_name: "Wema Bank",
+            currency: "NGN",
+            reference_id: `${userId}-${Date.now()}`,
         };
 
-        const virtualAccountResponse = await fetch(
-            "https://api.ufitpay.com/v1/dedicated_account",
+        const virtualAccountResponse = await fetchWithRetry(
+            "https://api.ufitpay.com/v1/create_bank_account",
             {
                 method: "POST",
                 headers: {
@@ -72,19 +65,15 @@ db.ref("users").on("child_added", async (snapshot) => {
             }
         );
 
-        const virtualAccountData = await virtualAccountResponse.json();
-
-        if (!virtualAccountResponse.ok) {
-            console.error(`Failed to create virtual account for user ${userId}:`, virtualAccountData);
-            return;
-        }
+        const virtualAccountData = await virtualAccountResponse;
 
         // Save account details in Firebase
         const accountDetails = {
             accountNumber: virtualAccountData.account_number,
-            bankName: "Wema Bank",  accountName: virtualAccountData.account_name,
+            bankName: "Wema Bank",
+            accountName: virtualAccountData.account_name,
             customerId: customerData.customer_id,
-            referenceId: virtualAccountData.reference_id, 
+            referenceId: virtualAccountData.reference_id,
         };
 
         await db.ref(`users/${userId}/accountDetails`).set(accountDetails);
@@ -93,4 +82,43 @@ db.ref("users").on("child_added", async (snapshot) => {
     } catch (error) {
         console.error(`Error creating virtual account for user ${userId}:`, error);
     }
+};
+
+// Retry mechanism for API requests
+const fetchWithRetry = async (url, options, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(url, options);
+            if (response.ok) return response.json();
+            console.error(`Retry ${i + 1}: Failed to fetch ${url}`);
+        } catch (error) {
+            console.error(`Retry ${i + 1}: Error fetching ${url}`, error);
+        }
+    }
+    throw new Error(`Failed after ${retries} retries`);
+};
+
+// Process all existing users
+const processExistingUsers = async () => {
+    const snapshot = await db.ref("users").once("value");
+    const users = snapshot.val();
+
+    if (users) {
+        for (const userId of Object.keys(users)) {
+            const userData = users[userId];
+            await processUser(userId, userData);
+        }
+    } else {
+        console.log("No users found in the database.");
+    }
+};
+
+// Listen for new users and process them
+db.ref("users").on("child_added", async (snapshot) => {
+    const userId = snapshot.key;
+    const userData = snapshot.val();
+    await processUser(userId, userData);
 });
+
+// Start processing existing users
+processExistingUsers().catch((error) => console.error("Error processing existing users:", error));
