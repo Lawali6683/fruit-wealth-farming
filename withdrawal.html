@@ -605,47 +605,6 @@ const fetchWithdrawals = async (uid) => {
     }
 };
        
-
-// Check Pending Withdrawals
-const checkPendingWithdrawals = async (uid) => {
-    const pendingRef = ref(db, `withdrawals/pending`);
-    const snapshot = await get(pendingRef);
-    if (snapshot.exists()) {
-        const pendingWithdrawals = snapshot.val();
-        for (const id in pendingWithdrawals) {
-            const withdrawal = pendingWithdrawals[id];
-            if (withdrawal.userID === uid) {
-                alert(
-                    `${withdrawal.userFullName}, you have a pending withdrawal of ₦${withdrawal.amount}. ` +
-                    "Please wait for payment on 4 hours To 24 hours. You can only make a new withdrawal after the pending one is payment."
-                );
-                return true;
-            }
-        }
-    }
-    return false;
-};
-
-const markWithdrawalSuccessful = async (uid, withdrawalID) => {
-    const pendingRef = ref(db, `withdrawals/pending/${uid}/${withdrawalID}`);
-    const successfulRef = ref(db, `withdrawals/successful/${uid}/${withdrawalID}`);
-
-    const snapshot = await get(pendingRef);
-    if (snapshot.exists()) {
-        const withdrawalData = snapshot.val();
-        withdrawalData.status = "successful";
-        withdrawalData.completedDate = new Date().toISOString();
-
-        // Move to successful withdrawals
-        await set(successfulRef, withdrawalData);
-        await set(pendingRef, null); 
-    } else {
-        throw new Error("Pending withdrawal not found.");
-    }
-};
-
-
-
 // Verify Bank Account with UfitPay
 const verifyBankAccount = async (accountNumber, bankCode) => {
     const UFITPAY_API_KEY = await getUfitpayApiKey();
@@ -726,8 +685,8 @@ withdrawForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const amount = parseFloat(document.getElementById("amount").value);
-    const bankName = document.getElementById("bank").value;
-    const bankCode = getBankCode(bankName);
+    const bankName = document.getElementById("bank").value; 
+    const bankCode = getBankCode(bankName); 
     const accountNumber = document.getElementById("accountNumber").value;
 
     if (isNaN(amount) || amount < 500) {
@@ -748,56 +707,117 @@ withdrawForm.addEventListener("submit", async (e) => {
 
     showLoading();
 
+    const userDetails = await fetchUserDetails(user.uid);
+    if (!userDetails || userDetails.userBalance < amount) {
+        alert("Insufficient balance.");
+        hideLoading();
+        return;
+    }
+
+    const hasPending = await checkPendingWithdrawals(user.uid);
+    if (hasPending) {
+        hideLoading();
+        return;
+    }
+
     try {
-        const userDetails = await fetchUserDetails(user.uid);
-        if (!userDetails || userDetails.userBalance < amount) {
-            throw new Error("Insufficient balance.");
-        }
-
-        const hasPending = await checkPendingWithdrawals(user.uid);
-        if (hasPending) throw new Error("You have a pending withdrawal. Please wait.");
-
         const { accountName, bankName } = await verifyBankAccount(accountNumber, bankCode);
 
         const confirmTransfer = confirm(
             `Are you sure you want to withdraw ₦${amount} to ${accountName} ${bankName} - ${accountNumber}?`
         );
-        if (!confirmTransfer) return;
+        if (!confirmTransfer) {
+            hideLoading();
+            return;
+        }
 
         const userPin = prompt("Enter your 6-digit Transfer PIN:");
         if (!userPin || userPin !== userDetails.transferP) {
-            throw new Error("Incorrect PIN. Please try again.");
+            alert("Incorrect PIN. Please try again.");
+            hideLoading();
+            return;
         }
 
+        // Deduct 7% fee from withdrawal
         const netAmount = amount - amount * 0.07;
-        const newWithdrawal = {
-            userID: user.uid,
-            userFullName: userDetails.fullName,
-            amount: amount,
-            netAmount: netAmount,
-            bankCode: bankCode,
-            accountNumber: accountNumber,
-            accountName: accountName,
-            bankName: bankName,
-            status: "pending",
-            date: new Date().toISOString(),
-        };
 
-        const withdrawalRef = ref(db, `withdrawals/pending/${user.uid}`);
-        await push(withdrawalRef, newWithdrawal);
+        // Check if the withdrawal has an ID or needs to be created
+        let withdrawalID = user.uid + "_" + new Date().getTime(); 
+        const pendingRef = ref(db, `withdrawals/pending/${user.uid}/${withdrawalID}`);
+        const successfulRef = ref(db, `withdrawals/successful/${user.uid}/${withdrawalID}`);
 
-        alert("Withdrawal request submitted successfully. Pending approval. You will be paid within 4 to 24 hours..");
-        userBalanceElement.textContent = `₦${(userDetails.userBalance - amount).toFixed(2)}`;
-        withdrawForm.reset();
+        // Check if the user has an ID in pending or successful withdrawals
+        const pendingSnapshot = await get(pendingRef);
+        const successfulSnapshot = await get(successfulRef);
+
+        // If no pending or successful withdrawal exists, create a new entry
+        if (!pendingSnapshot.exists() && !successfulSnapshot.exists()) {
+            const newWithdrawal = {
+                userID: user.uid,
+                userFullName: userDetails.fullName,
+                amount: amount,
+                netAmount: netAmount,
+                bankCode: bankCode,
+                accountNumber: accountNumber,
+                accountName: accountName,
+                bankName: bankName,
+                status: "pending", 
+                date: new Date().toISOString(),
+            };
+            
+            await set(pendingRef, newWithdrawal);
+
+            alert("Withdrawal request submitted successfully. Pending approval. You will be paid within 4 to 24 hours..");
+            userBalanceElement.textContent = `₦${(userDetails.userBalance - amount).toFixed(2)}`;
+            hideLoading();
+            withdrawForm.reset();
+        } else {
+            alert("A withdrawal request is already pending or successful.");
+            hideLoading();
+        }
+
     } catch (error) {
         alert(error.message);
-    } finally {
         hideLoading();
     }
 });
 
+const checkPendingWithdrawals = async (uid) => {
+    const pendingRef = ref(db, `withdrawals/pending`);
+    const successfulRef = ref(db, `withdrawals/successful`);
+    
+    // Fetch all pending withdrawals
+    const pendingSnapshot = await get(pendingRef);
+    if (pendingSnapshot.exists()) {
+        const pendingWithdrawals = pendingSnapshot.val();
+        for (const id in pendingWithdrawals) {
+            const withdrawal = pendingWithdrawals[id];
+            if (withdrawal.userID === uid) {
+                alert(
+                    `${withdrawal.userFullName}, you have a pending withdrawal of ₦${withdrawal.amount}. ` +
+                    "Please wait for payment on 4 hours To 24 hours. You can only make a new withdrawal after the pending one is paid."
+                );
+                return true; // Found pending withdrawal
+            }
+        }
+    }
 
-                                 
+    // Fetch all successful withdrawals
+    const successfulSnapshot = await get(successfulRef);
+    if (successfulSnapshot.exists()) {
+        const successfulWithdrawals = successfulSnapshot.val();
+        for (const id in successfulWithdrawals) {
+            const withdrawal = successfulWithdrawals[id];
+            if (withdrawal.userID === uid) {
+                alert("You already have a successful withdrawal. You can make another after 24 hours.");
+                return true; // Found successful withdrawal
+            }
+        }
+    }
+
+    return false; // No pending or successful withdrawal found
+};
+                                
 /// Map Bank Name to Bank Code
 const getBankCode = (bankName) => {
     const bankMap = {
