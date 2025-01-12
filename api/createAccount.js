@@ -24,9 +24,9 @@ const processUser = async (userId, userData) => {
     try {
         // Create UfitPay customer
         const customerRequestData = {
-            email: userData.email || `${userId}@fruitwealth.com`,
+            email: userData.email,
             full_name: userData.fullName,
-            phone_number: userData.phoneNumber || "0000000000",
+            phone_number: userData.phoneNumber,
         };
 
         const customerResponse = await fetchWithRetry(
@@ -42,7 +42,7 @@ const processUser = async (userId, userData) => {
             }
         );
 
-        const customerData = await customerResponse.json(); // Correct parsing
+        const customerData = await customerResponse.json();
 
         // Create virtual account for Wema Bank
         const virtualAccountRequestData = {
@@ -65,7 +65,7 @@ const processUser = async (userId, userData) => {
             }
         );
 
-        const virtualAccountData = await virtualAccountResponse.json(); // Correct parsing
+        const virtualAccountData = await virtualAccountResponse.json();
 
         // Save account details in Firebase
         const accountDetails = {
@@ -89,7 +89,7 @@ const fetchWithRetry = async (url, options, retries = 3) => {
     for (let i = 0; i < retries; i++) {
         try {
             const response = await fetch(url, options);
-            if (response.ok) return response.json();
+            if (response.ok) return response;
             console.error(`Retry ${i + 1}: Failed to fetch ${url}`);
         } catch (error) {
             console.error(`Retry ${i + 1}: Error fetching ${url}`, error);
