@@ -147,7 +147,8 @@
      
   </style>
 </head>
-<body>   
+<body>
+       <script type="module" src="app.js"></script>
   <div id="loadingScreen">
     <center><img src="lod.png" alt="Loading..."></center>
     <p><h2><center class="gk7">Please wait....</center></h2></p>
@@ -263,10 +264,12 @@
         window.location.href = mailtoUrl;
     });
 </script>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+   import * as axios from 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js';
 
     // Firebase configuration
     const firebaseConfig = {
@@ -304,115 +307,125 @@
         document.getElementById("accountName").innerText = accountName;
     }
 
-    // Add input listener for moving focus
-    function addInputListeners(containerId) {
-        const inputs = document.querySelectorAll(`#${containerId} input`);
-        inputs.forEach((input, index) => {
-            input.addEventListener('input', () => {
-                if (input.value.length === 1 && index < inputs.length - 1) {
-                    inputs[index + 1].focus();
+    // Check if user has account details
+    function checkUserAccount(uid) {
+        const userRef = ref(db, 'users/' + uid);
+        get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                if (userData.accountDetails) {
+                    displayUserData(userData);  
+                    toggleLoading(false);  
+                } else {
+                    createVirtualAccount(userData); 
                 }
-            });
+            } else {
+                console.error('No user data found');
+                toggleLoading(false);
+            }
+        }).catch((error) => {
+            console.error("Error reading user data:", error);
+            toggleLoading(false);
         });
     }
-    addInputListeners("enterPin");
-    addInputListeners("confirmPin");
 
-    // Handle modal display based on transfer PIN
-    document.addEventListener("DOMContentLoaded", () => {
-        const modal = document.getElementById("modal");
-        const closeModal = document.querySelector(".close");    
+    // Fetch API Key and Token from Vercel routes
+    async function getApiKeyAndToken() {
+        try {
+            const apiKeyResponse = await axios.get('/api/get-ufitpay-api-key');
+            const apiTokenResponse = await axios.get('/api/get-ufitpay-api-token');
+            return {
+                apiKey: apiKeyResponse.data.apiKey,
+                apiToken: apiTokenResponse.data.apiToken
+            };
+        } catch (error) {
+            console.error("Error fetching API key or token:", error);
+            throw new Error("Failed to fetch API credentials");
+        }
+    }
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const userRef = ref(db, `users/${user.uid}/transferP`);
-                get(userRef).then((snapshot) => {
-                    if (snapshot.exists()) {
-                        console.log("User already has a transfer PIN. Modal will not display.");
-                        modal.style.display = "none"; // Don't show modal
-                    } else {
-                        console.log("User does not have a transfer PIN. Showing modal.");
-                        modal.style.display = "flex"; 
-                    }
-                }).catch((error) => {
-                    console.error("Error checking transfer PIN:", error);
-                    alert("Error checking transfer PIN. Please try again later.");
-                });
-            } else {
-                alert("User not logged in.");
-            }
-        });    
+    // Create Virtual Account for User using UnfitPay API
+    async function createVirtualAccount(userData) {
+        const { fullName, email, phoneNumber } = userData;
+        const [firstName, lastName] = fullName.split(" ");
+        const businessName = "FWF"; 
+        const referenceId = generateReferenceId();
 
-        closeModal.addEventListener("click", () => {
-            modal.style.display = "none";
-        });    
+        // Get API credentials (key and token)
+        try {
+            const { apiKey, apiToken } = await getApiKeyAndToken();
 
-        window.addEventListener("click", (event) => {
-            if (event.target === modal) {
-                modal.style.display = "none";
-            }
-        });
+            // Prepare data for POST request to UnfitPay API
+            const requestData = {
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
+                phoneNumber: phoneNumber,
+                business_name: businessName,
+                bank: "Wema Bank",
+                currency: "NGN",
+                referenceId: referenceId
+            };
 
-        // Handle PIN submission
-        document.getElementById("submitPin").addEventListener("click", () => {
-            const pin = Array.from(document.querySelectorAll("#enterPin input")).map(input => input.value).join('');
-            const confPin = Array.from(document.querySelectorAll("#confirmPin input")).map(input => input.value).join('');
-
-            if (pin.length !== 5 || confPin.length !== 5) {
-                alert("PIN must be exactly 5 digits Number.");
-                return;
-            }
-
-            if (pin !== confPin) {
-                alert("Transfer PIN and Confirm PIN do not match.");
-                return;
-            }
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    const userRef = ref(db, `users/${user.uid}/transferP`);
-                    set(userRef, pin).then(() => {
-                        alert("Transfer PIN set successfully!");
-                        modal.style.display = "none"; 
-                    }).catch((error) => {
-                        console.error("Error saving PIN:", error);
-                        alert("Error setting PIN. Please try again.");
-                    });
-                } else {
-                    alert("User not logged in.");
+            // Make the API call to UnfitPay to create the virtual account
+            const response = await axios.post('https://api.ufitpay.com/v1/create_bank_account', requestData, {
+                headers: {
+                    'Api-Key': apiKey,
+                    'API-Token': apiToken
                 }
             });
-        });
 
-        // Fetch and display user data
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                toggleLoading(false);
-                alert("User not logged in. Please log in to continue.");
-                return;
+            if (response.data.status === 'success') {
+                // If account is created successfully, update the user's data in Firebase
+                const accountDetails = {
+                    bankName: "Wema Bank",
+                    accountNumber: response.data.data.account_number,
+                    accountName: fullName
+                };
+                updateAccountDetailsInFirebase(userData.uid, accountDetails);
+            } else {
+                console.error('Failed to create virtual account:', response.data.message);
             }
+        } catch (error) {
+            console.error('Error creating virtual account:', error);
+        }
+    }
 
-            toggleLoading(true);
+    // Generate unique reference ID for the request
+    function generateReferenceId() {
+        return 'REF-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    }
 
-            try {
-                const userSnapshot = await get(ref(db, `users/${user.uid}`));
-                if (userSnapshot.exists()) {
-                    displayUserData(userSnapshot.val());
-                } else {
-                    alert("No user data found in the database.");
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-                alert("Error retrieving user data. Please try again.");
-            } finally {
-                toggleLoading(false);
-            }
+    // Update user account details in Firebase
+    function updateAccountDetailsInFirebase(uid, accountDetails) {
+        const userRef = ref(db, 'users/' + uid + '/accountDetails');
+        set(userRef, accountDetails).then(() => {
+            console.log('User account details updated in Firebase');
+            displayUserData({ ...accountDetails, fullName: 'User' });
+            toggleLoading(false);  // Hide loading screen after successful update
+            alert('Congratulations, this is your FWF Company account details:\n' +
+                `Bank Name: ${accountDetails.bankName}\n` +
+                `Account Name: ${accountDetails.accountName}\n` +
+                `Account Number: ${accountDetails.accountNumber}\n` +
+                'You can start saving your deposits now!');
+        }).catch((error) => {
+            console.error("Error updating Firebase data:", error);
+            toggleLoading(false);
         });
+    }
 
-        // Show loading screen on page load
-        toggleLoading(true);
+    // Initialize by checking if user is authenticated
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            toggleLoading(true);  // Show loading screen while checking user data
+            checkUserAccount(user.uid);  // Check if user has account details or needs creation
+        } else {
+            console.log("No user is signed in");
+            toggleLoading(false);
+        }
     });
-</script>
 
+</script>
+</script>
 </body>
 </html>
