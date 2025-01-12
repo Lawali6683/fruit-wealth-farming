@@ -524,7 +524,9 @@ header {
             transaction.innerHTML = `<p><strong>${message}</strong></p><hr>`;
             successfulTable.prepend(transaction);
         }        
-    </script>                     
+    </script> 
+    
+                        
      <script type="module">
              import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getDatabase, ref, set, get, update, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
@@ -573,8 +575,6 @@ const fetchUserDetails = async (uid) => {
         return null;
     }
 };
-
-
 
 const fetchWithdrawals = async (uid) => {
     const pendingRef = ref(db, `withdrawals/pending/${uid}`);
@@ -645,12 +645,14 @@ const markWithdrawalSuccessful = async (uid, withdrawalID) => {
 };
 
 
+
 // Handle Withdrawal Form Submission
 withdrawForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const amount = parseFloat(document.getElementById("amount").value);
-    const bankCode = document.getElementById("bank").value;
+    const bankName = document.getElementById("bank").value; // User-selected bank name
+    const bankCode = getBankCode(bankName); // Map bank name to code
     const accountNumber = document.getElementById("accountNumber").value;
 
     if (isNaN(amount) || amount < 500) {
@@ -659,7 +661,7 @@ withdrawForm.addEventListener("submit", async (e) => {
     }
 
     if (amount > 100000) {
-        alert("Maximum withdrawal amount is ₦100,000. Every Day🙏");
+        alert("Maximum withdrawal amount is ₦100,000 daily.");
         return;
     }
 
@@ -668,24 +670,27 @@ withdrawForm.addEventListener("submit", async (e) => {
         alert("User not authenticated.");
         return;
     }
+
     showLoading();
 
     const userDetails = await fetchUserDetails(user.uid);
     if (!userDetails || userDetails.userBalance < amount) {
-        alert("You Have Not Balance.");
+        alert("Insufficient balance.");
         hideLoading();
         return;
     }
 
     const hasPending = await checkPendingWithdrawals(user.uid);
-    if (hasPending) return;
+    if (hasPending) {
+        hideLoading();
+        return;
+    }
 
-    try {
-        // Verify bank account with Unfitpay
+    try {      
         const { accountName, bankName } = await verifyBankAccount(accountNumber, bankCode);
 
         const confirmTransfer = confirm(
-            `Are you sure you want to withdraw ₦${amount} to ${accountName} (${bankName} - ${accountNumber})?`
+            `Are you sure you want to withdraw ₦${amount} to ${accountName} ${bankName} - ${accountNumber}?`
         );
         if (!confirmTransfer) {
             hideLoading();
@@ -694,7 +699,7 @@ withdrawForm.addEventListener("submit", async (e) => {
 
         const userPin = prompt("Enter your 6-digit Transfer PIN:");
         if (!userPin || userPin !== userDetails.transferP) {
-            alert("This PIN is Not Correct. Please try again.");
+            alert("Incorrect PIN. Please try again.");
             hideLoading();
             return;
         }
@@ -716,10 +721,10 @@ withdrawForm.addEventListener("submit", async (e) => {
             date: new Date().toISOString(),
         };
 
-        const withdrawalRef = ref(db, "withdrawals/pending");
+        const withdrawalRef = ref(db, `withdrawals/pending/${user.uid}`);
         await push(withdrawalRef, newWithdrawal);
 
-        alert("Withdrawal request submitted successfully. Pending approval. You will be paid within 4 to 24 hours.");
+        alert("Withdrawal request submitted successfully. Pending approval. You will be paid within 4 to 24 hours..");
         userBalanceElement.textContent = `₦${(userDetails.userBalance - amount).toFixed(2)}`;
         hideLoading();
         withdrawForm.reset();
@@ -729,48 +734,42 @@ withdrawForm.addEventListener("submit", async (e) => {
     }
 });
 
-
-// Verify Bank Account with Unfitpay
+// Verify Bank Account with UfitPay
 const verifyBankAccount = async (accountNumber, bankCode) => {
     const UFITPAY_API_KEY = await getUfitpayApiKey();
     const UFITPAY_API_TOKEN = await getUfitpayApiToken();
 
     if (!UFITPAY_API_KEY || !UFITPAY_API_TOKEN) {
-        throw new Error("Ufitpay API credentials are not available. Please try again later.");
+        throw new Error("Ufitpay API credentials are not available.");
     }
 
     try {
-        // Make the API request
         const response = await fetch("https://api.ufitpay.com/v1/bank_validate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${UFITPAY_API_TOKEN}`,
-                "x-api-key": UFITPAY_API_KEY
+                Authorization: `Bearer ${UFITPAY_API_TOKEN}`,
+                "x-api-key": UFITPAY_API_KEY,
             },
             body: JSON.stringify({
                 account_number: accountNumber,
-                bank_code: bankCode
-            })
+                bank_code: bankCode,
+            }),
         });
 
         const data = await response.json();
-
-        // Check if the response is successful
         if (data.status !== "success") {
             throw new Error(data.message || "This account number is incorrect. Please try again.");
         }
 
-        // Return account details
-        return { 
-            accountName: data.data.account_name, 
-            bankCode: bankCode 
+        return {
+            accountName: data.data.account_name,
+            bankName: data.data.bank_name,
         };
     } catch (error) {
         throw new Error(`Failed to verify account: ${error.message}`);
     }
 };
-
 
 // Fetch Unfitpay API Key
 async function getUfitpayApiKey() {
@@ -802,9 +801,9 @@ async function getUfitpayApiToken() {
     }
 }
                                  
-// Map Bank Code to Bank Name
-const getBankName = (code) => {
-    const banks = {
+/// Map Bank Name to Bank Code
+const getBankCode = (bankName) => {
+    const bankMap = {
        "058": "GTBank",
         "044": "Access Bank",
         "035": "Wema Bank",
@@ -840,8 +839,8 @@ const getBankName = (code) => {
     "50211": "Kuda Bank",
         "303": "Lotus Bank",
         "125": "Rubies MFB", 
-    };
-    return banks[code] || "Unknown Bank";
+    };    
+    return bankMap[bankName] || null;
 };
 
 // Authentication State Observer
