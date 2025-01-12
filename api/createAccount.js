@@ -42,7 +42,7 @@ const processUser = async (userId, userData) => {
             }
         );
 
-        const customerData = await customerResponse;
+        const customerData = await customerResponse.json(); // Correct parsing
 
         // Create virtual account for Wema Bank
         const virtualAccountRequestData = {
@@ -65,7 +65,7 @@ const processUser = async (userId, userData) => {
             }
         );
 
-        const virtualAccountData = await virtualAccountResponse;
+        const virtualAccountData = await virtualAccountResponse.json(); // Correct parsing
 
         // Save account details in Firebase
         const accountDetails = {
