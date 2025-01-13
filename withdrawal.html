@@ -525,9 +525,8 @@ header {
             successfulTable.prepend(transaction);
         }        
     </script> 
-                            
-     <script type="module"> 
-          import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+       <script type="module">                    
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getDatabase, ref, set, get, update, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
@@ -649,7 +648,7 @@ const verifyBankAccount = async (accountNumber, bankCode) => {
 
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000); 
+        const timeout = setTimeout(() => controller.abort(), 1000); 
         const response = await fetch("https://api.ufitpay.com/v1/bank_validate", {
             method: "POST",
             headers: {
@@ -786,43 +785,30 @@ withdrawForm.addEventListener("submit", async (e) => {
 });
 
 const checkPendingWithdrawals = async (uid) => {
-    const pendingRef = ref(db, `withdrawals/pending`);
-    const successfulRef = ref(db, `withdrawals/successful`);
-    
-    // Fetch all pending withdrawals
+    const pendingRef = ref(db, `withdrawals/pending/${uid}`);
+    const successfulRef = ref(db, `withdrawals/successful/${uid}`);
+
     const pendingSnapshot = await get(pendingRef);
     if (pendingSnapshot.exists()) {
-        const pendingWithdrawals = pendingSnapshot.val();
-        for (const id in pendingWithdrawals) {
-            const withdrawal = pendingWithdrawals[id];
-            if (withdrawal.userID === uid) {
-                alert(
+        alert(
                     `${withdrawal.userFullName}, you have a pending withdrawal of ₦${withdrawal.amount}. ` +
                     "Please wait for payment on 4 hours To 24 hours. You can only make a new withdrawal after the pending one is paid."
                 );
-                return true; // Found pending withdrawal
-            }
-        }
+        return true; // Found pending withdrawal
     }
 
-    // Fetch all successful withdrawals
     const successfulSnapshot = await get(successfulRef);
     if (successfulSnapshot.exists()) {
-        const successfulWithdrawals = successfulSnapshot.val();
-        for (const id in successfulWithdrawals) {
-            const withdrawal = successfulWithdrawals[id];
-            if (withdrawal.userID === uid) {
-                alert("You already have a successful withdrawal. You can make another after 24 hours.");
-                return true; // Found successful withdrawal
-            }
-        }
+     alert("You already have a successful withdrawal. You can make another after 24 hours.");
+        return true; // Found successful withdrawal
     }
 
-    return false; 
+    return false;
 };
-                                
+
+                               
 /// Map Bank Name to Bank Code
-const getBankCode = (bankName) => {
+const getBankCode = (bankCode) => {
     const bankMap = {
        "058": "GTBank",
         "044": "Access Bank",
@@ -859,25 +845,30 @@ const getBankCode = (bankName) => {
     "50211": "Kuda Bank",
         "303": "Lotus Bank",
         "125": "Rubies MFB", 
-    };    
-    return bankMap[bankName] || null;
+   };
+    return bankMap[bankCode] || "Unknown Bank";
 };
 
 // Authentication State Observer
 onAuthStateChanged(auth, async (user) => {
-    try {
-        if (user) {
+    if (user) {
+        showLoading();
+        try {
             const userDetails = await fetchUserDetails(user.uid);
             if (userDetails) {
                 userBalanceElement.textContent = `₦${userDetails.userBalance.toFixed(2)}`;
+                await fetchWithdrawals(user.uid); // Load withdrawals
             }
-        } else {
-            alert("Please log in to continue.");
+        } catch (error) {
+            console.error("Error fetching user details:", error.message);
+        } finally {
+            hideLoading();
         }
-    } catch (error) {
-        console.error("Error in authentication state observer:", error.message);
+    } else {
+        alert("Please log in to continue.");
     }
 });
+
 
 document.addEventListener("DOMContentLoaded", () => {
     showLoading();
