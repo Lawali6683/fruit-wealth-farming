@@ -602,75 +602,63 @@ const fetchWithdrawals = async (uid) => {
         }
     }
 };
-
-
-
+  
+ 
        
 // Fetch Monnify API Key
 const getMonnifyApiKey = async () => {
-    try {
-        const response = await fetch("/api/get-monnify-access-api-key");
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText} (${response.status})`);
-        }
+    const response = await fetch("/api/get-monnify-access-api-key").catch(() => null);
+    if (response && response.ok) {
         const data = await response.json();
-        return data.apiKey;
-    } catch (error) {
-        console.error(`Failed to fetch Monnify API key: ${error.message}`);
-        throw new Error(`Failed to fetch Monnify API key.`);
+        return data.apiKey || null;
     }
+    return null;
 };
 
 // Fetch Monnify Secret Key
 const getMonnifySecretKey = async () => {
-    try {
-        const response = await fetch("/api/get-monnify-access-secret-key");
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText} (${response.status})`);
-        }
+    const response = await fetch("/api/get-monnify-access-secret-key").catch(() => null);
+    if (response && response.ok) {
         const data = await response.json();
-        return data.secretKey;
-    } catch (error) {
-        console.error(`Failed to fetch Monnify secret key: ${error.message}`);
-        throw new Error(`Failed to fetch Monnify secret key.`);
+        return data.secretKey || null;
     }
+    return null;
 };
 
 // Fetch Monnify Access Token
 const getMonnifyAccessToken = async () => {
-    try {
-        const apiKey = await getMonnifyApiKey();
-        const secretKey = await getMonnifySecretKey();
-        const credentials = btoa(`${apiKey}:${secretKey}`); // Encode in Base64
-
-        const response = await fetch("https://api.monnify.com/api/v1/auth/login", {
-            method: "POST",
-            headers: {
-                Authorization: `Basic ${credentials}`,
-                "Content-Type": "application/json",
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText} (${response.status})`);
-        }
-
-        const data = await response.json();
-        if (data.responseCode === "00") {
-            return data.response.accessToken;
-        } else {
-            throw new Error(data.responseMessage || "Failed to fetch access token.");
-        }
-    } catch (error) {
-        console.error(`Failed to fetch access token: ${error.message}`);
-        throw new Error("Failed to fetch Monnify access token.");
+    const apiKey = await getMonnifyApiKey();
+    const secretKey = await getMonnifySecretKey();
+    if (!apiKey || !secretKey) {
+        console.warn("Missing API Key or Secret Key.");
+        return null;
     }
+
+    const credentials = btoa(`${apiKey}:${secretKey}`);
+    const response = await fetch("https://api.monnify.com/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+            Authorization: `Basic ${credentials}`,
+            "Content-Type": "application/json",
+        },
+    }).catch(() => null);
+
+    if (response && response.ok) {
+        const data = await response.json();
+        return data.responseCode === "00" ? data.response.accessToken : null;
+    }
+    return null;
 };
 
 // Verify Bank Account with Monnify
 const verifyBankAccount = async (accountNumber, bankCode) => {
+    const accessToken = await getMonnifyAccessToken();
+    if (!accessToken) {
+        alert("Failed to get Monnify access token. Please try again later.");
+        return null;
+    }
+
     try {
-        const accessToken = await getMonnifyAccessToken();
         const response = await fetch(
             `https://api.monnify.com/api/v1/disbursements/account/validate?accountNumber=${accountNumber}&bankCode=${bankCode}`,
             {
@@ -682,22 +670,27 @@ const verifyBankAccount = async (accountNumber, bankCode) => {
             }
         );
 
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText} (${response.status})`);
-        }
-
-        const data = await response.json();
-        if (data.requestSuccessful) {
-            return {
-                accountName: data.response.accountName,
-                bankName: data.response.bankName,
-            };
+        if (response.ok) {
+            const data = await response.json();
+            if (data.requestSuccessful) {
+                return {
+                    accountName: data.response.accountName,
+                    bankName: data.response.bankName,
+                };
+            } else {
+                alert(
+                    "This bank account or bank name is incorrect. Please check and try again."
+                );
+                return null;
+            }
         } else {
-            throw new Error(data.responseMessage || "Account verification failed.");
+            alert("Failed to verify bank account. Please try again.");
+            return null;
         }
     } catch (error) {
-        console.error(`Failed to verify account: ${error.message}`);
-        throw new Error(`Failed to verify account: ${error.message}`);
+        console.error("Error verifying bank account:", error.message);
+        alert("An unexpected error occurred while verifying the bank account.");
+        return null;
     }
 };
 
@@ -736,9 +729,15 @@ withdrawForm.addEventListener("submit", async (e) => {
     }
 
     try {
-        const { accountName, bankName } = await verifyBankAccount(accountNumber, bankCode);
+        const bankDetails = await verifyBankAccount(accountNumber, bankCode);
+        if (!bankDetails) {
+            hideLoading();
+            return; // Stop process if verification fails
+        }
+
+        const { accountName, bankName } = bankDetails;
         const confirmTransfer = confirm(
-            `Are you sure you want to withdraw ₦${amount} to ${accountName} ${bankName} - ${accountNumber}?`
+            `Are you sure you want to withdraw ₦${amount} to ${accountName} (${bankName} - ${accountNumber})?`
         );
         if (!confirmTransfer) {
             hideLoading();
@@ -769,16 +768,18 @@ withdrawForm.addEventListener("submit", async (e) => {
             date: new Date().toISOString(),
         });
 
-        alert("Withdrawal request submitted successfully. Pending approval. You will be paid within 4 to 24 hours..");
+        alert(
+            "Withdrawal request submitted successfully. Pending approval. You will be paid within 4 to 24 hours."
+        );
         userBalanceElement.textContent = `₦${(userDetails.userBalance - amount).toFixed(2)}`;
-        hideLoading();
         withdrawForm.reset();
     } catch (error) {
-        alert(error.message);
+        console.error("Error processing withdrawal:", error.message);
+        alert("Failed to process withdrawal. Please try again.");
+    } finally {
         hideLoading();
     }
 });
-
 
 const checkPendingWithdrawals = async (uid) => {
     const pendingRef = ref(db, `withdrawals/pending/${uid}`);
