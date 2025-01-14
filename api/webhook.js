@@ -24,16 +24,17 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-const UFITPAY_API_KEY = process.env.UFITPAY_API_KEY;
-const UFITPAY_API_TOKEN = process.env.UFITPAY_API_TOKEN;
+const MONNIFY_API_KEY = process.env.MONNIFY_API_KEY;
+const MONNIFY_SECRET_KEY = process.env.MONNIFY_SECRET_KEY;
 
-if (!UFITPAY_API_KEY || !UFITPAY_API_TOKEN) {
-  throw new Error("UfitPay API credentials not found.");
+if (!MONNIFY_API_KEY || !MONNIFY_SECRET_KEY) {
+  throw new Error("Monnify API credentials not found.");
 }
 
-// Validate UfitPay signature (Note: Adjust as needed based on UfitPay's signature scheme)
-function validateUfitpaySignature(req, signature) {
-  const hash = createHmac('sha512', UFITPAY_API_KEY)
+// Validate Monnify webhook signature
+function validateMonnifySignature(req, signature) {
+  const secret = Buffer.from(MONNIFY_SECRET_KEY, 'base64');
+  const hash = createHmac('sha512', secret)
     .update(JSON.stringify(req.body))
     .digest('hex');
   return hash === signature;
@@ -41,47 +42,36 @@ function validateUfitpaySignature(req, signature) {
 
 async function verifyPayment(transactionReference) {
   try {
+    const authResponse = await fetch('https://api.monnify.com/api/v1/auth/login', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${MONNIFY_API_KEY}:${MONNIFY_SECRET_KEY}`).toString('base64')}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const authData = await authResponse.json();
+    const accessToken = authData.response.accessToken;
+
     const response = await fetch(
-      `https://api.ufitpay.com/v1/transaction/verify/${transactionReference}`,
+      `https://api.monnify.com/api/v2/transactions/${transactionReference}`,
       {
         method: 'GET',
         headers: {
-          "Api-Key": UFITPAY_API_KEY,
-          "Api-Token": UFITPAY_API_TOKEN,
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
       }
     );
 
     const data = await response.json();
-    if (!data.status) {
-      console.error('Payment verification failed:', data.message);
+    if (data.response && data.response.paymentStatus === 'PAID') {
+      return data.response;
+    } else {
       return null;
     }
-    return data.data.status === 'success' ? data.data : null;
   } catch (error) {
     console.error('Error verifying payment:', error.message);
-    return null;
-  }
-}
-
-async function verifyWithdrawal(reference) {
-  try {
-    const response = await fetch(`https://api.ufitpay.com/v1/withdrawal/verify/${reference}`, {
-      method: 'GET',
-      headers: {
-        "Api-Key": UFITPAY_API_KEY,
-        "Api-Token": UFITPAY_API_TOKEN,
-      },
-    });
-
-    const data = await response.json();
-    if (!data.status) {
-      console.error('Withdrawal verification failed:', data.message);
-      return null;
-    }
-    return data.data.status === 'success' ? data.data : null;
-  } catch (error) {
-    console.error('Error verifying withdrawal:', error.message);
     return null;
   }
 }
@@ -92,35 +82,35 @@ export default async function handler(req, res) {
     return res.status(405).send('Method Not Allowed.');
   }
 
-  if (!req.body || !req.headers['x-ufitpay-signature']) {
+  if (!req.body || !req.headers['monnify-signature']) {
     return res.status(400).send('Invalid Request.');
   }
 
-  const signature = req.headers['x-ufitpay-signature'];
-  if (!validateUfitpaySignature(req, signature)) {
+  const signature = req.headers['monnify-signature'];
+  if (!validateMonnifySignature(req, signature)) {
     return res.status(400).send('Invalid signature.');
   }
 
-  const { event, data } = req.body;
+  const { event, transactionReference } = req.body;
 
-  if (event === 'charge.success') {
+  if (event === 'SUCCESSFUL_TRANSACTION') {
     // Handle deposit (add to investment)
     try {
-      const transactionDetails = await verifyPayment(data.reference);
+      const transactionDetails = await verifyPayment(transactionReference);
 
       if (transactionDetails) {
-        const { email } = transactionDetails.customer;
+        const email = transactionDetails.customer.email;
         const userUid = await getUserUidByEmail(email);
 
         if (userUid) {
-          const alreadyProcessed = await checkTransactionProcessed(userUid, transactionDetails.reference);
+          const alreadyProcessed = await checkTransactionProcessed(userUid, transactionReference);
 
           if (alreadyProcessed) {
             return res.status(400).send('Transaction already processed.');
           }
 
-          const investmentAmount = transactionDetails.amount / 100;
-          await updateInvestment(userUid, investmentAmount, transactionDetails.reference);
+          const investmentAmount = transactionDetails.amountPaid / 100;
+          await updateInvestment(userUid, investmentAmount, transactionReference);
           return res.status(200).send('Payment verified and investment updated.');
         } else {
           return res.status(400).send('User not found.');
@@ -132,13 +122,13 @@ export default async function handler(req, res) {
       console.error('Error processing deposit:', error.message);
       return res.status(500).send('Internal Server Error.');
     }
-  } else if (event === 'withdrawal.success') {
+  } else if (event === 'SUCCESSFUL_WITHDRAWAL') {
     // Handle withdrawal (deduct from userBalance)
     try {
-      const withdrawalDetails = await verifyWithdrawal(data.reference);
+      const withdrawalDetails = await verifyPayment(transactionReference);
 
       if (withdrawalDetails) {
-        const { email } = withdrawalDetails.recipient;
+        const email = withdrawalDetails.customer.email;
         const userUid = await getUserUidByEmail(email);
 
         if (userUid) {
@@ -146,7 +136,7 @@ export default async function handler(req, res) {
           const userSnapshot = await userRef.once('value');
           const userData = userSnapshot.val();
 
-          const withdrawalAmount = withdrawalDetails.amount / 100;
+          const withdrawalAmount = withdrawalDetails.amountPaid / 100;
           if (userData.userBalance >= withdrawalAmount) {
             await userRef.update({
               userBalance: userData.userBalance - withdrawalAmount,
