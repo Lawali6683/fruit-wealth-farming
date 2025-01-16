@@ -4,7 +4,8 @@
   "description": "A platform for wealth creation through fruit farming investments.",
   "type": "module",
   "scripts": {
-    "start": "node api/webhook.js"
+    "start": "node api/webhook.js",
+    "build": "echo 'No build step needed'"
   },
   "dependencies": {
     "firebase-admin": "^11.5.0",
