@@ -1,8 +1,10 @@
-const express = require("express");
-const axios = require("axios");
-require("dotenv").config(); 
-const app = express();
+import express from "express";
+import axios from "axios";
+import dotenv from "dotenv";
 
+dotenv.config(); // Load environment variables
+
+const app = express();
 app.use(express.json());
 
 // Route for getting Monnify access token
@@ -47,8 +49,5 @@ app.post("/api/get-monnify-access-token", async (req, res) => {
     }
 });
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// Export Express app
+export default app;
