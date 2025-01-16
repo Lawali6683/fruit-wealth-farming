@@ -49,5 +49,4 @@ app.post("/api/get-monnify-access-token", async (req, res) => {
     }
 });
 
-// Export Express app
 export default app;
