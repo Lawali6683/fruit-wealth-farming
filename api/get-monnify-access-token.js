@@ -1,13 +1,11 @@
 const express = require("express");
 const axios = require("axios");
-require("dotenv").config(); // Load environment variables
-
+require("dotenv").config(); 
 const app = express();
 
-// Middleware to handle JSON requests
 app.use(express.json());
 
-// Route: Fetch Monnify Access Token
+// Route for getting Monnify access token
 app.post("/api/get-monnify-access-token", async (req, res) => {
     const { MONNIFY_API_KEY, MONNIFY_SECRET_KEY } = process.env;
 
@@ -18,12 +16,10 @@ app.post("/api/get-monnify-access-token", async (req, res) => {
         });
     }
 
-    // Encode API Key and Secret Key to Base64
     const credentials = Buffer.from(`${MONNIFY_API_KEY}:${MONNIFY_SECRET_KEY}`).toString("base64");
 
     try {
-        // Request Monnify token
-        const response = await axios.post("https://api.monnify.com/api/v1/auth/login", {}, {
+        const response = await axios.post("https://sandbox.monnify.com/api/v1/auth/login", {}, {
             headers: {
                 Authorization: `Basic ${credentials}`,
                 "Content-Type": "application/json",
@@ -38,21 +34,21 @@ app.post("/api/get-monnify-access-token", async (req, res) => {
         } else {
             return res.status(400).json({
                 success: false,
-                message: "Failed to authenticate with Monnify.",
+                message: "Failed to retrieve Monnify access token.",
                 error: response.data.responseMessage,
             });
         }
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Error fetching token from Monnify.",
+            message: "Error fetching Monnify access token.",
             error: error.message,
         });
     }
 });
 
-// Start Server
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
