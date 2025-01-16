@@ -602,65 +602,36 @@ const fetchWithdrawals = async (uid) => {
         }
     }
 };
-  
- 
-       
-// Fetch Monnify API Key
-const getMonnifyApiKey = async () => {
-    const response = await fetch("/api/get-monnify-access-token").catch(() => null);
-    if (response && response.ok) {
-        const data = await response.json();
-        return data.apiKey || null;
-    }
-    return null;
-};
-
-// Fetch Monnify Secret Key
-const getMonnifySecretKey = async () => {
-    const response = await fetch("/api/get-monnify-access-token").catch(() => null);
-    if (response && response.ok) {
-        const data = await response.json();
-        return data.secretKey || null;
-    }
-    return null;
-};
-
+             
 // Fetch Monnify Access Token
 const getMonnifyAccessToken = async () => {
-    const apiKey = await getMonnifyApiKey();
-    const secretKey = await getMonnifySecretKey();
-    if (!apiKey || !secretKey) {
-        console.warn("Missing API Key or Secret Key.");
-        return null;
-    }
-
-    const credentials = btoa(`${apiKey}:${secretKey}`);
-    const response = await fetch("https://api.monnify.com/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-            Authorization: `Basic ${credentials}`,
-            "Content-Type": "application/json",
-        },
+    const response = await fetch("/api/get-monnify-access-token", {
+        method: "POST", 
     }).catch(() => null);
-
+    
     if (response && response.ok) {
         const data = await response.json();
-        return data.responseCode === "00" ? data.response.accessToken : null;
+        return data.accessToken || null;
     }
     return null;
-};
+};    
 
 // Verify Bank Account with Monnify
 const verifyBankAccount = async (accountNumber, bankCode) => {
+    if (!accountNumber || !bankCode) {
+        alert("Please enter correct account number and try again.");
+        return null;
+    }
+
     const accessToken = await getMonnifyAccessToken();
     if (!accessToken) {
-        alert("Failed to get Monnify access token. Please try again later.");
+        alert("Failed to get access token. Please try again later.");
         return null;
     }
 
     try {
         const response = await fetch(
-            `https://api.monnify.com/api/v1/disbursements/account/validate?accountNumber=${accountNumber}&bankCode=${bankCode}`,
+            `https://sandbox.monnify.com/api/v1/disbursements/account/validate?accountNumber=${accountNumber}&bankCode=${bankCode}`,
             {
                 method: "GET",
                 headers: {
@@ -678,18 +649,16 @@ const verifyBankAccount = async (accountNumber, bankCode) => {
                     bankName: data.response.bankName,
                 };
             } else {
-                alert(
-                    "This bank account or bank name is incorrect. Please check and try again."
-                );
+                alert("This bank account or bank name is incorrect. Please check and try again.");
                 return null;
             }
         } else {
-            alert("Failed to verify bank account. Please try again.");
+            alert("Failed to verify the bank account. Please try again later.");
             return null;
         }
     } catch (error) {
-        console.error("Error verifying bank account:", error.message);
-        alert("An unexpected error occurred while verifying the bank account.");
+        alert("An error occurred while verifying the bank account. Please try again.");
+        console.error(error);
         return null;
     }
 };
