@@ -1,17 +1,27 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/referral/:referralId",
-      "destination": "/index.html"
+      "src": "api/get-monnify-access-token.js",
+      "use": "@vercel/node"
     },
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/get-monnify-access-token",
+      "dest": "api/get-monnify-access-token.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/referral",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
