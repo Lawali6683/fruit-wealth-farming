@@ -2,12 +2,11 @@ import express from "express";
 import axios from "axios";
 import dotenv from "dotenv";
 
-dotenv.config(); // Load environment variables
+dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-// Route for getting Monnify access token
 app.post("/api/get-monnify-access-token", async (req, res) => {
     const { MONNIFY_API_KEY, MONNIFY_SECRET_KEY } = process.env;
 
