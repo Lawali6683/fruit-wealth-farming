@@ -2,7 +2,6 @@
   "name": "fruit-wealth-farming",
   "version": "2.0.0",
   "description": "A platform for wealth creation through fruit farming investments.",
-  "type": "module",
   "scripts": {
     "start": "node api/webhook.js",
     "vercel-build": "echo 'No build step needed'"
