@@ -1,5 +1,6 @@
-exports.handler = async function (event, context) {
-    // Ensure the request method is POST
+const fetch = require('node-fetch');
+
+module.exports.handler = async function (event, context) {
     if (event.httpMethod !== "POST") {
         return {
             statusCode: 405,
@@ -7,10 +8,8 @@ exports.handler = async function (event, context) {
         };
     }
 
-    // Retrieve environment variables for Monnify API keys
     const { MONNIFY_API_KEY, MONNIFY_SECRET_KEY } = process.env;
 
-    // Check if environment variables are missing
     if (!MONNIFY_API_KEY || !MONNIFY_SECRET_KEY) {
         return {
             statusCode: 500,
@@ -21,11 +20,11 @@ exports.handler = async function (event, context) {
         };
     }
 
-    // Generate Basic Auth Token (Updated to use Buffer for base64 encoding)
-    const authToken = Buffer.from(`${MONNIFY_API_KEY}:${MONNIFY_SECRET_KEY}`).toString("base64");
+    // Generate Basic Auth Token
+    const authToken = Buffer.from(`${MONNIFY_API_KEY}:${MONNIFY_SECRET_KEY}`).toString('base64');
 
     try {
-        // Fetch the token from Monnify API
+        // Fetch the token
         const response = await fetch("https://sandbox.monnify.com/api/v1/auth/login", {
             method: "POST",
             headers: {
@@ -34,11 +33,8 @@ exports.handler = async function (event, context) {
             },
         });
 
-        // Parse the response from Monnify
         const data = await response.json();
-        console.log("Response Data:", data); // Log the response for debugging
 
-        // Check if the response is successful
         if (data.responseCode === "00") {
             return {
                 statusCode: 200,
@@ -48,7 +44,6 @@ exports.handler = async function (event, context) {
                 }),
             };
         } else {
-            console.error("Monnify Error:", data); // Log the error for debugging
             return {
                 statusCode: 400,
                 body: JSON.stringify({
@@ -59,8 +54,6 @@ exports.handler = async function (event, context) {
             };
         }
     } catch (error) {
-        // Handle errors in the request or network issues
-        console.error("Fetch Error:", error.message); // Log the error for debugging
         return {
             statusCode: 500,
             body: JSON.stringify({
