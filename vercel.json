@@ -5,6 +5,14 @@
       "destination": "/"
     },
     {
+      "source": "/api/get-monnify-access-token",
+      "destination": "/api/get-monnify-access-token.js"
+    },
+    {
+      "source": "/webhook",
+      "destination": "/webhook.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
