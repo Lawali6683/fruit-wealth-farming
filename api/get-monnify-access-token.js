@@ -1,13 +1,8 @@
-import express from "express";
-import axios from "axios";
-import dotenv from "dotenv";
+export default async function handler(req, res) {
+    if (req.method !== "POST") {
+        return res.status(405).json({ success: false, message: "Method not allowed" });
+    }
 
-dotenv.config();
-
-const app = express();
-app.use(express.json());
-
-app.post("/api/get-monnify-access-token", async (req, res) => {
     const { MONNIFY_API_KEY, MONNIFY_SECRET_KEY } = process.env;
 
     if (!MONNIFY_API_KEY || !MONNIFY_SECRET_KEY) {
@@ -17,26 +12,31 @@ app.post("/api/get-monnify-access-token", async (req, res) => {
         });
     }
 
-    const credentials = Buffer.from(`${MONNIFY_API_KEY}:${MONNIFY_SECRET_KEY}`).toString("base64");
+    // Generate Basic Auth Token
+    const authToken = btoa(`${MONNIFY_API_KEY}:${MONNIFY_SECRET_KEY}`);
 
     try {
-        const response = await axios.post("https://sandbox.monnify.com/api/v1/auth/login", {}, {
+        // Fetch the token
+        const response = await fetch("https://sandbox.monnify.com/api/v1/auth/login", {
+            method: "POST",
             headers: {
-                Authorization: `Basic ${credentials}`,
+                Authorization: `Basic ${authToken}`,
                 "Content-Type": "application/json",
             },
         });
 
-        if (response.data.responseCode === "00") {
+        const data = await response.json();
+
+        if (data.responseCode === "00") {
             return res.status(200).json({
                 success: true,
-                accessToken: response.data.response.accessToken,
+                accessToken: data.response.accessToken,
             });
         } else {
             return res.status(400).json({
                 success: false,
                 message: "Failed to retrieve Monnify access token.",
-                error: response.data.responseMessage,
+                error: data.responseMessage,
             });
         }
     } catch (error) {
@@ -46,6 +46,4 @@ app.post("/api/get-monnify-access-token", async (req, res) => {
             error: error.message,
         });
     }
-});
-
-export default app;
+}
