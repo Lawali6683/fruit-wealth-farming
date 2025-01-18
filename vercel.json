@@ -6,7 +6,7 @@
     },
     {
       "source": "/api/get-monnify-access-token",
-      "destination": "/api/get-monnify-access-token.js"
+      "destination": "/api/get-monnify-access-token.cjs"
     },
     {
       "source": "/webhook",
@@ -16,5 +16,10 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/**.js": {
+      "runtime": "nodejs14.x"
+    }
+  }
 }
