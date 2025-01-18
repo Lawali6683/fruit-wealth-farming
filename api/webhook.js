@@ -1,6 +1,6 @@
-import { createHmac } from 'crypto';
-import admin from 'firebase-admin';
-import fetch from 'node-fetch';
+const { createHmac } = require('crypto');
+const admin = require('firebase-admin');
+const fetch = require('node-fetch');
 
 // Firebase initialization
 if (!admin.apps.length) {
@@ -77,7 +77,7 @@ async function verifyPayment(transactionReference) {
 }
 
 // Webhook handler
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).send('Method Not Allowed.');
   }
@@ -94,7 +94,6 @@ export default async function handler(req, res) {
   const { event, transactionReference } = req.body;
 
   if (event === 'SUCCESSFUL_TRANSACTION') {
-    // Handle deposit (add to investment)
     try {
       const transactionDetails = await verifyPayment(transactionReference);
 
@@ -123,7 +122,6 @@ export default async function handler(req, res) {
       return res.status(500).send('Internal Server Error.');
     }
   } else if (event === 'SUCCESSFUL_WITHDRAWAL') {
-    // Handle withdrawal (deduct from userBalance)
     try {
       const withdrawalDetails = await verifyPayment(transactionReference);
 
@@ -159,7 +157,7 @@ export default async function handler(req, res) {
   } else {
     return res.status(400).send('Invalid event.');
   }
-}
+};
 
 // Helper functions
 async function getUserUidByEmail(email) {
