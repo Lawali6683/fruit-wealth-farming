@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const fetch = require("node-fetch");
 
 exports.handler = async function (event, context) {
     if (event.httpMethod !== "POST") {
@@ -8,7 +8,8 @@ exports.handler = async function (event, context) {
         };
     }
 
-    const { MONNIFY_API_KEY, MONNIFY_SECRET_KEY } = process.env;
+    const MONNIFY_API_KEY = process.env.MONNIFY_API_KEY;
+    const MONNIFY_SECRET_KEY = process.env.MONNIFY_SECRET_KEY;
 
     if (!MONNIFY_API_KEY || !MONNIFY_SECRET_KEY) {
         return {
@@ -20,11 +21,9 @@ exports.handler = async function (event, context) {
         };
     }
 
-    // Generate Basic Auth Token
-    const authToken = Buffer.from(`${MONNIFY_API_KEY}:${MONNIFY_SECRET_KEY}`).toString('base64');
+    const authToken = Buffer.from(`${MONNIFY_API_KEY}:${MONNIFY_SECRET_KEY}`).toString("base64");
 
     try {
-        // Fetch the token
         const response = await fetch("https://sandbox.monnify.com/api/v1/auth/login", {
             method: "POST",
             headers: {
@@ -32,6 +31,18 @@ exports.handler = async function (event, context) {
                 "Content-Type": "application/json",
             },
         });
+
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            return {
+                statusCode: response.status,
+                body: JSON.stringify({
+                    success: false,
+                    message: "Failed to retrieve Monnify access token.",
+                    error: errorResponse.responseMessage || "Unknown error",
+                }),
+            };
+        }
 
         const data = await response.json();
 
@@ -48,8 +59,7 @@ exports.handler = async function (event, context) {
                 statusCode: 400,
                 body: JSON.stringify({
                     success: false,
-                    message: "Failed to retrieve Monnify access token.",
-                    error: data.responseMessage,
+                    message: data.responseMessage || "Unexpected response from Monnify.",
                 }),
             };
         }
@@ -58,7 +68,7 @@ exports.handler = async function (event, context) {
             statusCode: 500,
             body: JSON.stringify({
                 success: false,
-                message: "Error fetching Monnify access token.",
+                message: "An error occurred while fetching Monnify access token.",
                 error: error.message,
             }),
         };
