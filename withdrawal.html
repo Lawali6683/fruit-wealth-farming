@@ -49,69 +49,71 @@
     <div id="result" style="margin-top: 20px;"></div>
 
     <script>
-        document.getElementById("validationForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+    document.getElementById("validationForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    const bankCode = document.getElementById("bankCode").value.trim();
-    const accountNumber = document.getElementById("accountNumber").value.trim();
-    const amount = parseFloat(document.getElementById("amount").value.trim());
+        const bankCode = document.getElementById("bankCode").value.trim();
+        const accountNumber = document.getElementById("accountNumber").value.trim();
+        const amount = parseFloat(document.getElementById("amount").value.trim());
 
-    if (!bankCode || !accountNumber || isNaN(amount)) {
-        alert("Please fill in all fields correctly.");
-        return;
-    }
-
-    try {
-        // Fetch Monnify Access Token
-        const tokenResponse = await fetch("/functions/get-monnify-access-token", {
-            method: "POST",
-        });
-        if (!tokenResponse.ok) {
-            throw new Error("Failed to get access token from Monnify.");
+        if (!bankCode || !accountNumber || isNaN(amount)) {
+            alert("Please fill in all fields correctly.");
+            return;
         }
 
-        const tokenData = await tokenResponse.json();
-        const accessToken = tokenData.accessToken;
-        if (!accessToken) {
-            throw new Error("Access token not retrieved.");
-        }
+        try {
+            // Fetch Monnify Access Token
+            const tokenResponse = await fetch("/functions/get-monnify-access-token", {
+                method: "POST",
+            });
 
-        // Verify Bank Account with Monnify
-        const verifyResponse = await fetch(
-            `https://api.monnify.com/api/v1/disbursements/account/validate?accountNumber=${accountNumber}&bankCode=${bankCode}`,
-            {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    "Content-Type": "application/json",
-                },
+            if (!tokenResponse.ok) {
+                throw new Error("Failed to get access token from Monnify.");
             }
-        );
 
-        if (!verifyResponse.ok) {
-            throw new Error("Failed to verify bank account.");
-        }
+            const tokenData = await tokenResponse.json();
+            const accessToken = tokenData.accessToken;
 
-        const verifyData = await verifyResponse.json();
-        if (verifyData.requestSuccessful) {
-            const { accountName, bankName } = verifyData.response;
-            const confirmation = confirm(
-                `Are you sure you want to withdraw ₦${amount} to ${accountName} (${bankName}) - ${accountNumber}?`
+            if (!accessToken) {
+                throw new Error("Access token not retrieved.");
+            }
+
+            // Verify Bank Account with Monnify
+            const verifyResponse = await fetch(
+                `https://sandbox.monnify.com/api/v1/disbursements/account/validate?accountNumber=${accountNumber}&bankCode=${bankCode}`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
             );
-            if (confirmation) {
-                alert("Withdrawal request confirmed!");
-            } else {
-                alert("Withdrawal canceled.");
-            }
-        } else {
-            alert("Account validation failed. Please check the details and try again.");
-        }
-    } catch (error) {
-        console.error(error.message);
-        alert(`An error occurred: ${error.message}`);
-    }
-});
 
-    </script>
+            if (!verifyResponse.ok) {
+                throw new Error("Failed to verify bank account.");
+            }
+
+            const verifyData = await verifyResponse.json();
+            if (verifyData.requestSuccessful) {
+                const { accountName } = verifyData.responseBody;
+                const confirmation = confirm(
+                    `Are you sure you want to withdraw ₦${amount} to ${accountName} (${bankCode}) - ${accountNumber}?`
+                );
+                if (confirmation) {
+                    alert("Withdrawal request confirmed!");
+                } else {
+                    alert("Withdrawal canceled.");
+                }
+            } else {
+                alert("Account validation failed. Please check the details and try again.");
+            }
+        } catch (error) {
+            console.error(error.message);
+            alert(`An error occurred: ${error.message}`);
+        }
+    });
+</script>
+
 </body>
 </html>
