@@ -17,14 +17,15 @@ jobs:
       - name: Set Up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: "16"
+
+      - name: Set Environment Variables
+        run: |
+          echo "MONNIFY_API_KEY=${{ secrets.MONNIFY_API_KEY }}" >> $GITHUB_ENV
+          echo "MONNIFY_SECRET_KEY=${{ secrets.MONNIFY_SECRET_KEY }}" >> $GITHUB_ENV
 
       - name: Install Dependencies
         run: npm install
 
-      - name: Run Tests
-        run: echo "No tests configured."
-
       - name: Deploy Backend
-        run: |
-          node functions/get-monnify-access-token.js
+        run: node functions/get-monnify-access-token.js
