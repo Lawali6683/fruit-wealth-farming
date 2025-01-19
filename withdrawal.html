@@ -605,7 +605,7 @@ const fetchWithdrawals = async (uid) => {
              
 // Fetch Monnify Access Token
 const getMonnifyAccessToken = async () => {
-    const response = await fetch("/api/get-monnify-access-token", {
+    const response = await fetch("/functions/get-monnify-access-token", {
         method: "POST", 
     }).catch(() => null);
     
