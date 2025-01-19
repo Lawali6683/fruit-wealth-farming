@@ -8,6 +8,7 @@ exports.handler = async function (event, context) {
         };
     }
 
+    // Tabbatar da Environment Variables
     const MONNIFY_API_KEY = process.env.MONNIFY_API_KEY;
     const MONNIFY_SECRET_KEY = process.env.MONNIFY_SECRET_KEY;
 
@@ -21,9 +22,11 @@ exports.handler = async function (event, context) {
         };
     }
 
+    // Generate Base64 Authorization Token
     const authToken = Buffer.from(`${MONNIFY_API_KEY}:${MONNIFY_SECRET_KEY}`).toString("base64");
 
     try {
+        // Send POST request to Monnify
         const response = await fetch("https://sandbox.monnify.com/api/v1/auth/login", {
             method: "POST",
             headers: {
@@ -46,7 +49,7 @@ exports.handler = async function (event, context) {
 
         const data = await response.json();
 
-        if (data.responseCode === "00") {
+        if (data.responseCode === "0") {
             return {
                 statusCode: 200,
                 body: JSON.stringify({
